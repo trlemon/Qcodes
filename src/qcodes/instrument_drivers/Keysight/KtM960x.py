@@ -2,6 +2,8 @@ import ctypes
 from functools import partial
 from typing import TYPE_CHECKING, Generic
 
+from typing_extensions import deprecated
+
 import qcodes.validators as vals
 from qcodes.instrument import Instrument, InstrumentBaseKWArgs
 from qcodes.parameters import (
@@ -11,6 +13,7 @@ from qcodes.parameters import (
     create_on_off_val_mapping,
 )
 from qcodes.parameters.parameter_base import ParameterDataTypeVar
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 from . import KtM960xDefs
 
@@ -296,5 +299,12 @@ class KeysightM960x(Instrument):
         super().close()
 
 
-KtM960x = KeysightM960x
-"Alias for backwards compatibility"
+@deprecated(
+    "KtM960x is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightM960x instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class KtM960x(KeysightM960x):
+    """Alias for backwards compatibility"""
+
+    pass

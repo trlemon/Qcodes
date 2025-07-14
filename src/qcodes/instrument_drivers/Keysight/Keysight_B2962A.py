@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from typing_extensions import deprecated
+
 from qcodes.instrument import (
     Instrument,
     InstrumentBaseKWArgs,
@@ -7,6 +9,7 @@ from qcodes.instrument import (
     VisaInstrument,
     VisaInstrumentKWArgs,
 )
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
     from typing_extensions import Unpack
@@ -171,6 +174,11 @@ class KeysightB2962A(VisaInstrument):
         return IDN
 
 
+@deprecated(
+    "B2962A is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightB2962A instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
 class B2962A(KeysightB2962A):
     """
     Alias for backwards compatibility

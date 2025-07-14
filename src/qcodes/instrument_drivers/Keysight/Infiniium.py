@@ -9,6 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from pyvisa import VisaIOError
 from pyvisa.constants import StatusCode
+from typing_extensions import deprecated
 
 import qcodes.validators as vals
 from qcodes.instrument import (
@@ -27,6 +28,7 @@ from qcodes.parameters import (
     ParameterWithSetpoints,
     create_on_off_val_mapping,
 )
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -488,10 +490,17 @@ class KeysightInfiniiumBoundMeasurement(AbstractMeasurementSubsystem):
         super().__init__(parent, name, channel=parent.channel_name, **kwargs)
 
 
-BoundMeasurement = KeysightInfiniiumBoundMeasurement
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "BoundMeasurement is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightInfiniiumBoundMeasurement instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class BoundMeasurement(KeysightInfiniiumBoundMeasurement):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightInfiniiumUnboundMeasurement(AbstractMeasurementSubsystem):
@@ -571,10 +580,17 @@ class KeysightInfiniiumUnboundMeasurement(AbstractMeasurementSubsystem):
         return self._channel
 
 
-UnboundMeasurement = KeysightInfiniiumUnboundMeasurement
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "UnboundMeasurement is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightInfiniiumUnboundMeasurement instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class UnboundMeasurement(KeysightInfiniiumUnboundMeasurement):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightInfiniiumFunction(InstrumentChannel):
@@ -693,10 +709,17 @@ class KeysightInfiniiumFunction(InstrumentChannel):
             self.write(":SYST:HEAD OFF")
 
 
-InfiniiumFunction = KeysightInfiniiumFunction
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "InfiniiumFunction is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightInfiniiumFunction instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class InfiniiumFunction(KeysightInfiniiumFunction):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightInfiniiumChannel(InstrumentChannel["KeysightInfiniium"]):
@@ -818,10 +841,17 @@ class KeysightInfiniiumChannel(InstrumentChannel["KeysightInfiniium"]):
         self.trace.update_setpoints()
 
 
-InfiniiumChannel = KeysightInfiniiumChannel
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "InfiniiumChannel is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightInfiniiumChannel instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class InfiniiumChannel(KeysightInfiniiumChannel):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightInfiniium(VisaInstrument):
@@ -1315,7 +1345,14 @@ class KeysightInfiniium(VisaInstrument):
             return None
 
 
-Infiniium = KeysightInfiniium
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "Infiniium is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightInfiniium instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class Infiniium(KeysightInfiniium):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
