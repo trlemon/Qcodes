@@ -13,7 +13,7 @@ import pytest
 import xarray as xr
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as hst
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 from pytest import LogCaptureFixture, TempPathFactory
 
 import qcodes
@@ -1923,6 +1923,7 @@ def test_netcdf_export_with_mixed_timestamp_raw(
     assert loaded_ds.completed_timestamp_raw is None
 
 
+@pytest.mark.skip(reason="Disabled until we renable new export")
 @given(data=hst.data())
 @settings(
     max_examples=10,
@@ -2113,10 +2114,11 @@ def test_measurement_2d_with_inferred_setpoint(
     with caplog.at_level(logging.INFO):
         xr_ds = ds.to_xarray_dataset()
 
-    assert any(
-        "Exporting signal to xarray using direct method" in record.message
-        for record in caplog.records
-    )
+    # disabled until we renable new export
+    # assert any(
+    #     "Exporting signal to xarray using direct method" in record.message
+    #     for record in caplog.records
+    # )
 
     # Sizes and coords
     assert xr_ds.sizes == {"x": nx, "y": ny}
@@ -2128,15 +2130,16 @@ def test_measurement_2d_with_inferred_setpoint(
     expected_signal = x_vals[:, None] + 3.0 * y_vals[None, :]
     np.testing.assert_allclose(xr_ds["signal"].values, expected_signal)
 
-    # Inferred coords for y_b0 and y_b1 exist with dims only along y
-    for name, vals in ("y_b0", y_b0_vals), ("y_b1", y_b1_vals):
-        assert name in xr_ds.coords
-        assert xr_ds.coords[name].dims == ("y",)
-        np.testing.assert_allclose(xr_ds.coords[name].values, vals)
-        # Indexes of inferred coords should correspond to the y axis index
-        inf_idx = xr_ds.coords[name].indexes
-        assert set(inf_idx.keys()) == {"y"}
-        assert inf_idx["y"].equals(xr_ds.indexes["y"])
+    # disabled until we renable new export
+    # # Inferred coords for y_b0 and y_b1 exist with dims only along y
+    # for name, vals in ("y_b0", y_b0_vals), ("y_b1", y_b1_vals):
+    #     assert name in xr_ds.coords
+    #     assert xr_ds.coords[name].dims == ("y",)
+    #     np.testing.assert_allclose(xr_ds.coords[name].values, vals)
+    #     # Indexes of inferred coords should correspond to the y axis index
+    #     inf_idx = xr_ds.coords[name].indexes
+    #     assert set(inf_idx.keys()) == {"y"}
+    #     assert inf_idx["y"].equals(xr_ds.indexes["y"])
 
 
 def test_measurement_2d_with_inferred_setpoint_from_setpoint(
@@ -2178,10 +2181,11 @@ def test_measurement_2d_with_inferred_setpoint_from_setpoint(
     with caplog.at_level(logging.INFO):
         xr_ds = ds.to_xarray_dataset()
 
-    assert any(
-        "Exporting signal to xarray using direct method" in record.message
-        for record in caplog.records
-    )
+    # disabled until we renable new export
+    # assert any(
+    #     "Exporting signal to xarray using direct method" in record.message
+    #     for record in caplog.records
+    # )
 
     # Sizes and coords
     assert xr_ds.sizes == {"x": nx, "y": ny}
@@ -2236,17 +2240,79 @@ def test_measurement_2d_top_level_inferred_is_data_var(
         xr_ds = ds.to_xarray_dataset()
 
     # Direct path log should be present
-    assert any(
-        "Exporting signal to xarray using direct method" in record.message
-        for record in caplog.records
-    )
+    # disabled until we renable new export
+    # assert any(
+    #     "Exporting signal to xarray using direct method" in record.message
+    #     for record in caplog.records
+    # )
 
     # The derived param should be a data variable with dims (x, y), not a coord
-    assert "derived" in xr_ds.data_vars
-    assert "derived" not in xr_ds.coords
-    assert xr_ds["derived"].dims == ("x", "y")
+    # assert "derived" in xr_ds.data_vars
+    # assert "derived" not in xr_ds.coords
+    # assert xr_ds["derived"].dims == ("x", "y")
 
     expected_signal = x_vals[:, None] + y_vals[None, :]
-    expected_derived = 2.0 * expected_signal
+    # expected_derived = 2.0 * expected_signal
     np.testing.assert_allclose(xr_ds["signal"].values, expected_signal)
-    np.testing.assert_allclose(xr_ds["derived"].values, expected_derived)
+    # np.testing.assert_allclose(xr_ds["derived"].values, expected_derived)
+
+
+@pytest.mark.skip(reason="Disabled until we renable new export")
+def test_with_without_shape_is_the_same(experiment: Experiment) -> None:
+    nx, ny = 2, 3
+    x_vals = np.linspace(0.0, -1.0, nx)
+    y_vals = np.linspace(10.0, 12.0, ny)
+
+    # simple 2d grid with no shapes
+    meas1 = Measurement(exp=experiment, name="2d_no_shape")
+    meas1.register_custom_parameter("x", paramtype="numeric")
+    meas1.register_custom_parameter("y", paramtype="numeric")
+    meas1.register_custom_parameter("z", paramtype="numeric", setpoints=("x", "y"))
+    with meas1.run() as datasaver:
+        for ix in range(nx):
+            for iy in range(ny):
+                x = float(x_vals[ix])
+                y = float(y_vals[iy])
+                z = x + y
+                datasaver.add_result(
+                    ("x", x),
+                    ("y", y),
+                    ("z", z),
+                )
+        ds1 = datasaver.dataset
+
+    dsx1 = ds1.to_xarray_dataset()
+
+    # simple 2d grid with knwon shapes
+    meas2 = Measurement(exp=experiment, name="2d_shape")
+    meas2.register_custom_parameter("x", paramtype="numeric")
+    meas2.register_custom_parameter("y", paramtype="numeric")
+    meas2.register_custom_parameter("z", paramtype="numeric", setpoints=("x", "y"))
+    meas2.set_shapes({"z": (nx, ny)})
+    with meas2.run() as datasaver:
+        for ix in range(nx):
+            for iy in range(ny):
+                x = float(x_vals[ix])
+                y = float(y_vals[iy])
+                z = x + y
+                datasaver.add_result(
+                    ("x", x),
+                    ("y", y),
+                    ("z", z),
+                )
+        ds2 = datasaver.dataset
+    dsx2 = ds2.to_xarray_dataset()
+
+    # the two export methods inverts the x axis such that the new export method
+    # matches the order the data is written in which is arguably more correct
+    assert_array_equal(dsx2["x"].values, x_vals)
+
+    assert_array_equal(np.flip(dsx1["x"].values), dsx2["x"].values)
+
+    dsx2_sorted = dsx2.sortby(["x", "y"])
+
+    assert_array_equal(dsx1["x"].values, dsx2_sorted["x"].values)
+
+    # however data for a given coordinate is the same
+    assert bool((dsx2 - dsx1)["z"].max() == 0)
+    assert bool((dsx2 - dsx1)["x"].max() == 0)
