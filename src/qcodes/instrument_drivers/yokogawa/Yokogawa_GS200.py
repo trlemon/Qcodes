@@ -207,7 +207,10 @@ class YokogawaGS200Monitor(InstrumentChannel):
 
 class YokogawaGS200Program(InstrumentChannel):
     """
-    InstrumentModule that holds a Program for the YokoGawa GS200
+    InstrumentModule that holds a Program for the YokoGawa GS200.
+
+    monitor_present indicates if the */MON* option is available,
+    in which case the trigger parameter is as well.
 
     """
 
@@ -215,6 +218,7 @@ class YokogawaGS200Program(InstrumentChannel):
         self,
         parent: "YokogawaGS200",
         name: str,
+        monitor_present: bool,
         **kwargs: "Unpack[InstrumentBaseKWArgs]",
     ) -> None:
         super().__init__(parent, name, **kwargs)
@@ -241,14 +245,15 @@ class YokogawaGS200Program(InstrumentChannel):
         )
         """Parameter slope"""
 
-        self.trigger: Parameter = self.add_parameter(
-            "trigger",
-            label="the program trigger",
-            get_cmd=":PROG:TRIG?",
-            set_cmd=":PROG:TRIG {}",
-            vals=Enum("normal", "mend"),
-        )
-        """Parameter trigger"""
+        if monitor_present:
+            self.trigger: Parameter = self.add_parameter(
+                "trigger",
+                label="the program trigger",
+                get_cmd=":PROG:TRIG?",
+                set_cmd=":PROG:TRIG {}",
+                vals=Enum("normal", "mend"),
+            )
+            """Parameter trigger"""
 
         self.save: Parameter = self.add_parameter(
             "save",
@@ -485,7 +490,7 @@ class YokogawaGS200(VisaInstrument):
         self.add_function("reset", call_cmd="*RST")
 
         self.program: YokogawaGS200Program = self.add_submodule(
-            "program", YokogawaGS200Program(self, "program")
+            "program", YokogawaGS200Program(self, "program", monitor_present)
         )
         """Instrument module program"""
 
