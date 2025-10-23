@@ -1276,15 +1276,19 @@ mode."""
         # convert both value*range and the resolution factors
         # to strings with few digits, so we avoid floating point
         # rounding errors.
-        res_fac_strs = [f"{(v * rang):.1e}" for v in self._resolution_factors]
-        if f"{value:.1e}" not in res_fac_strs:
-            raise ValueError(
-                f"Resolution setting {value:.1e}"
-                f"({value} at range {rang}) does not exist. "
-                f"Possible values are {res_fac_strs}"
-            )
+        if value in ("MIN", "MAX", "DEF"):
+            str_value = value
+        else:
+            res_fac_strs = [f"{(v * rang):.1e}" for v in self._resolution_factors]
+            str_value = f"{value:.1e}"
+            if str_value not in res_fac_strs:
+                raise ValueError(
+                    f"Resolution setting {str_value}"
+                    f"({value} at range {rang}) does not exist. "
+                    f"Possible values are {res_fac_strs}"
+                )
 
-        self.write(f"VOLT:DC:RES {value:.1e}")
+        self.write(f"VOLT:DC:RES {str_value}")
 
         # NPLC settings change with resolution
         self.NPLC.get()
