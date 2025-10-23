@@ -64,7 +64,10 @@ class OxfordTriton(IPInstrument):
         self._control_channel = 5
         self.pump_label_dict = {"TURB1": "Turbo 1", "COMP": "Compressor"}
 
-        self.magnet_available: bool = self._get_control_B_param("ACTN") != "INVALID"
+        self.magnet_available: bool = self._get_control_B_param("ACTN") not in (
+            "INVALID",
+            "communication timeout",
+        )
         """Indicates if a magnet is equipped *and* controlled by the Triton."""
 
         self.time: Parameter = self.add_parameter(
