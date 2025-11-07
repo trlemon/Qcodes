@@ -349,6 +349,8 @@ class YokogawaGS200Program(InstrumentChannel):
             vals=Numbers(0.1, 3600.0),
             get_cmd=":PROG:INT?",
             set_cmd=":PROG:INT {}",
+            get_parser=float,
+            set_parser=float,
         )
         """Parameter interval"""
 
@@ -359,6 +361,8 @@ class YokogawaGS200Program(InstrumentChannel):
             vals=Numbers(0.0, 3600.0),
             get_cmd=":PROG:SLOP?",
             set_cmd=":PROG:SLOP {}",
+            get_parser=float,
+            set_parser=float,
         )
         """Parameter slope"""
 
