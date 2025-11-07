@@ -356,7 +356,7 @@ class YokogawaGS200Program(InstrumentChannel):
             "slope",
             label="the program slope time",
             unit="s",
-            vals=Numbers(0.1, 3600.0),
+            vals=Numbers(0.0, 3600.0),
             get_cmd=":PROG:SLOP?",
             set_cmd=":PROG:SLOP {}",
         )
