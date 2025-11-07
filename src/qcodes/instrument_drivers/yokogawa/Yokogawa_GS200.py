@@ -12,7 +12,7 @@ from qcodes.instrument import (
 )
 from qcodes.parameters import DelegateParameter, ManualParameter
 from qcodes.utils import QCoDeSDeprecationWarning
-from qcodes.validators import Bool, Enum, Ints, Numbers
+from qcodes.validators import Bool, Enum, Ints, MultiType, Numbers
 
 if TYPE_CHECKING:
     from typing_extensions import Unpack
@@ -400,7 +400,7 @@ class YokogawaGS200Program(InstrumentChannel):
             label="step of the current program",
             get_cmd=":PROG:COUN?",
             set_cmd=":PROG:COUN {}",
-            vals=Ints(1, 10000),
+            vals=MultiType(Ints(1, 10000), Enum("MIN", "MAX")),
         )
         """Parameter count"""
 
