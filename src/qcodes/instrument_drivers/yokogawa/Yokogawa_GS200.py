@@ -832,10 +832,6 @@ class YokogawaGS200(VisaInstrument):
             rate = self.ramp_rate()
 
         self._assert_mode("CURR")
-        assert (
-            abs(ramp_to) <= self.current_limit()
-            and abs(ramp_to) <= self.current_range()
-        )
         with (
             self.ramp_step.set_to(step),
             self.ramp_rate.set_to(rate),
