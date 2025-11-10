@@ -54,13 +54,13 @@ comm==0.2.3
     #   ipywidgets
 contourpy==1.3.3
     # via matplotlib
-coverage==7.11.0
+coverage==7.11.3
     # via
     #   qcodes (pyproject.toml)
     #   pytest-cov
 cycler==0.12.1
     # via matplotlib
-dask==2025.10.0
+dask==2025.11.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -102,7 +102,7 @@ h5py==3.15.1
     #   qcodes-loop
 hickle==5.0.3
     # via qcodes-loop
-hypothesis==6.145.1
+hypothesis==6.147.0
     # via qcodes (pyproject.toml)
 idna==3.11
     # via requests
@@ -116,7 +116,7 @@ ipykernel==7.1.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-ipython==9.6.0
+ipython==9.7.0
     # via
     #   ipykernel
     #   ipywidgets
@@ -453,9 +453,9 @@ traitlets==5.14.3
     #   nbsphinx
 types-jsonschema==4.25.1.20251009
     # via qcodes (pyproject.toml)
-types-networkx==3.5.0.20251104
+types-networkx==3.5.0.20251106
     # via qcodes (pyproject.toml)
-types-pytz==2025.2.0.20250809
+types-pytz==2025.2.0.20251108
     # via pandas-stubs
 types-pywin32==311.0.0.20251008
     # via qcodes (pyproject.toml)
