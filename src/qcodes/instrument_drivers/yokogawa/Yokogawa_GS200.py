@@ -867,8 +867,9 @@ class YokogawaGS200(VisaInstrument):
                         f"Desired output level not in range  [-{rng:.3}, {rng:.3}]"
                     )
 
-                if (delta := ramp_to - self.output_level()) == 0:
-                    # Nothing to do.
+                if (delta := ramp_to - self.output_level.source.get_raw()) == 0:
+                    # Nothing to do. We got the raw value because ramp_to already went through
+                    # set-parsing including scaling and offsetting.
                     return
 
                 slope_time = abs(delta) / self.ramp_rate()
