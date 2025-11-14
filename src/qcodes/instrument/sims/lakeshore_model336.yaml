@@ -241,7 +241,7 @@ devices:
           q: "PID 2,{}"
 
       outmode_output_1:
-        default: "1,2,0"
+        default: "1,1,0"
         getter:
           q: "OUTMODE? 1"
           r: "{}"
@@ -249,7 +249,7 @@ devices:
           q: "OUTMODE 1, {}"
 
       outmode_output_2:
-        default: "1,1,0"
+        default: "1,2,0"
         getter:
           q: "OUTMODE? 2"
           r: "{}"
@@ -273,7 +273,7 @@ devices:
           q: "RANGE 2,{}"
 
       setpoint_output_1:
-        default: 0
+        default: 100
         getter:
           q: "SETP? 1"
           r: "{}"
@@ -281,7 +281,7 @@ devices:
           q: "SETP 1,{}"
 
       setpoint_output_2:
-        default: 0
+        default: 100
         getter:
           q: "SETP? 2"
           r: "{}"
@@ -348,7 +348,7 @@ devices:
       # Output 3 (Voltage Source, no PID)
       # ====================
       outmode_output_3:
-        default: "1,1,0"
+        default: "1,3,0"
         getter:
           q: "OUTMODE? 3"
           r: "{}"
@@ -364,7 +364,7 @@ devices:
           q: "RANGE 3,{}"
 
       setpoint_output_3:
-        default: 0
+        default: 100
         getter:
           q: "SETP? 3"
           r: "{}"
@@ -395,7 +395,7 @@ devices:
       # Output 4 (Voltage Source, no PID)
       # ====================
       outmode_output_4:
-        default: "1,2,0"
+        default: "1,4,0"
         getter:
           q: "OUTMODE? 4"
           r: "{}"
@@ -411,7 +411,7 @@ devices:
           q: "RANGE 4,{}"
 
       setpoint_output_4:
-        default: 0
+        default: 100
         getter:
           q: "SETP? 4"
           r: "{}"
