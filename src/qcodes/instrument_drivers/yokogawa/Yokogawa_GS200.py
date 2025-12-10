@@ -766,6 +766,31 @@ class YokogawaGS200(VisaInstrument):
         self.measure._output = bool(state)
         return state
 
+    def _parse_delay(self, delay: float | None, step: float | None) -> float:
+        if delay is not None and delay != 0:
+            warnings.warn(
+                "The delay parameter is deprecated and will be removed in a future release. "
+                "Please use the ramp_rate and ramp_step parameters instead.",
+                QCoDeSDeprecationWarning,
+                stacklevel=3,
+            )
+            rate = step / delay
+        else:
+            rate = self.ramp_rate()
+        return rate
+
+    def _parse_step(self, step: float | None) -> float:
+        if step is not None:
+            warnings.warn(
+                "The step parameter is deprecated and will be removed in a future release. "
+                "Please use the ramp_step parameter instead.",
+                QCoDeSDeprecationWarning,
+                stacklevel=3,
+            )
+        else:
+            step = self.ramp_step()
+        return step
+
     def ramp_voltage(
         self,
         ramp_to: float,
@@ -784,25 +809,8 @@ class YokogawaGS200(VisaInstrument):
             ramp_mode: Use hardware or software ramps. See :attr:`ramp_mode`.
 
         """
-        if step is not None:
-            warnings.warn(
-                "The step parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_step parameter instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        else:
-            step = self.ramp_step()
-        if delay is not None:
-            warnings.warn(
-                "The delay parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_rate and ramp_step parameters instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            rate = step / delay
-        else:
-            rate = self.ramp_rate()
+        step = self._parse_step(step)
+        rate = self._parse_delay(delay, step)
 
         self._assert_mode("VOLT")
         with (
@@ -831,25 +839,8 @@ class YokogawaGS200(VisaInstrument):
             ramp_mode: Use hardware or software ramps. See :attr:`ramp_mode`.
 
         """
-        if step is not None:
-            warnings.warn(
-                "The step parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_step parameter instead.",
-                QCoDeSDeprecationWarning,
-                stacklevel=2,
-            )
-        else:
-            step = self.ramp_step()
-        if delay is not None:
-            warnings.warn(
-                "The delay parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_rate and ramp_step parameters instead.",
-                QCoDeSDeprecationWarning,
-                stacklevel=2,
-            )
-            rate = step / delay
-        else:
-            rate = self.ramp_rate()
+        step = self._parse_step(step)
+        rate = self._parse_delay(delay, step)
 
         self._assert_mode("CURR")
         with (
