@@ -12,7 +12,15 @@ from qcodes.instrument import (
 )
 from qcodes.parameters import DelegateParameter, ManualParameter
 from qcodes.utils import QCoDeSDeprecationWarning
-from qcodes.validators import Bool, Enum, Ints, MultiType, Numbers
+from qcodes.validators import (
+    Bool,
+    Enum,
+    Ints,
+    MultiTypeAnd,
+    MultiTypeOr,
+    Numbers,
+    PermissiveMultiples,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Unpack
@@ -342,11 +350,13 @@ class YokogawaGS200Program(InstrumentChannel):
         self._repeat = 1
         self._file_name = None
 
+        # What the manual does not mention: the internal clock is an astonishing 10 Hz,
+        # so only multiples of 0.1 s are allowed.
         self.interval: Parameter = self.add_parameter(
             "interval",
             label="the program interval time",
             unit="s",
-            vals=Numbers(0.1, 3600.0),
+            vals=MultiTypeAnd(Numbers(0.1, 3600.0), PermissiveMultiples(0.1)),
             get_cmd=":PROG:INT?",
             set_cmd=":PROG:INT {}",
             get_parser=float,
@@ -358,7 +368,7 @@ class YokogawaGS200Program(InstrumentChannel):
             "slope",
             label="the program slope time",
             unit="s",
-            vals=Numbers(0.0, 3600.0),
+            vals=MultiTypeAnd(Numbers(0.0, 3600.0), PermissiveMultiples(0.1)),
             get_cmd=":PROG:SLOP?",
             set_cmd=":PROG:SLOP {}",
             get_parser=float,
@@ -405,7 +415,7 @@ class YokogawaGS200Program(InstrumentChannel):
             get_cmd=":PROG:COUN?",
             set_cmd=":PROG:COUN {}",
             get_parser=int,
-            vals=MultiType(Ints(1, 10000), Enum("MIN", "MAX")),
+            vals=MultiTypeOr(Ints(1, 10000), Enum("MIN", "MAX")),
         )
         """Parameter count"""
 
