@@ -404,6 +404,7 @@ class YokogawaGS200Program(InstrumentChannel):
             label="step of the current program",
             get_cmd=":PROG:COUN?",
             set_cmd=":PROG:COUN {}",
+            get_parser=int,
             vals=MultiType(Ints(1, 10000), Enum("MIN", "MAX")),
         )
         """Parameter count"""
