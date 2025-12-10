@@ -741,7 +741,12 @@ class YokogawaGS200(VisaInstrument):
             vals=Numbers(0, float("inf")),
             initial_value=0,
         )
-        """The ramp step when :attr:`ramp_mode` is set to "SOFTWARE"."""
+        """The ramp step when :attr:`ramp_mode` is set to "SOFTWARE".
+
+        When :attr:`ramp_mode` is "HARDWARE", defines the output delta
+        above which a ramp is used. If the delta is below this value,
+        the output is "jumped".
+        """
 
         self.connect_message()
 
@@ -880,6 +885,9 @@ class YokogawaGS200(VisaInstrument):
 
                 if (delta := ramp_to - self.output_level()) == 0:
                     # Nothing to do.
+                    return
+                elif abs(delta) < self.ramp_step():
+                    self._set_output(ramp_to)
                     return
 
                 slope_time = abs(delta) / self.ramp_rate()
