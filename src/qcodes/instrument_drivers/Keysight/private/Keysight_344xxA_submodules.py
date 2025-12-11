@@ -2,7 +2,7 @@ import textwrap
 from bisect import bisect_left
 from contextlib import ExitStack
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
     from typing_extensions import Unpack
+
+NumericScpiMnemonic: TypeAlias = Literal["MIN", "MAX", "DEF"]
 
 
 class Keysight344xxATrigger(InstrumentChannel):
@@ -954,7 +956,9 @@ mode is disabled (default), the integration time is set in PLC
                 set_cmd=self._set_apt_time,
                 get_cmd=self._get_with_sense_function("APERture"),
                 get_parser=float,
-                vals=vals.Numbers(*apt_times[self.model]),
+                vals=vals.MultiType(
+                    vals.Numbers(*apt_times[self.model]), vals.Enum("MIN", "MAX", "DEF")
+                ),
                 docstring=textwrap.dedent(
                     """\
                 Specifies the integration time in seconds (called aperture
@@ -1248,8 +1252,11 @@ mode."""
 
         return func
 
-    def _set_apt_time(self, value: float) -> None:
-        self._write_with_sense_function("APERture", f"{value:f}")
+    def _set_apt_time(self, value: float | NumericScpiMnemonic) -> None:
+        if isinstance(value, float):
+            self._write_with_sense_function("APERture", f"{value:f}")
+        else:
+            self._write_with_sense_function("APERture", f"{value!s}")
 
         # setting aperture time switches aperture mode ON
         self.aperture_mode.get()
