@@ -885,11 +885,11 @@ class YokogawaGS200(VisaInstrument):
 
                 # Clip to hardware limits
                 if slope_time > 3600:
-                    self.log.warning("Slope time > 3600s. Clipping.")
+                    self.log.info("Slope time > 3600s. Clipping.")
                 slope_time = min(slope_time, 3600)
 
                 if slope_time < 0.1:
-                    self.log.warning("Interval time < 0.1s. Clipping.")
+                    self.log.info("Interval time < 0.1s. Clipping.")
                 interval_time = max(slope_time, 0.1)
 
                 # Program the ramp; don't use the Program class to avoid overhead from
