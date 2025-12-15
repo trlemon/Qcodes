@@ -12,7 +12,15 @@ from qcodes.instrument import (
 )
 from qcodes.parameters import DelegateParameter, ManualParameter
 from qcodes.utils import QCoDeSDeprecationWarning
-from qcodes.validators import Bool, Enum, Ints, MultiType, Numbers
+from qcodes.validators import (
+    Bool,
+    Enum,
+    Ints,
+    MultiTypeAnd,
+    MultiTypeOr,
+    Numbers,
+    PermissiveMultiples,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Unpack
@@ -342,11 +350,13 @@ class YokogawaGS200Program(InstrumentChannel):
         self._repeat = 1
         self._file_name = None
 
+        # What the manual does not mention: the internal clock is an astonishing 10 Hz,
+        # so only multiples of 0.1 s are allowed.
         self.interval: Parameter = self.add_parameter(
             "interval",
             label="the program interval time",
             unit="s",
-            vals=Numbers(0.1, 3600.0),
+            vals=MultiTypeAnd(Numbers(0.1, 3600.0), PermissiveMultiples(0.1)),
             get_cmd=":PROG:INT?",
             set_cmd=":PROG:INT {}",
             get_parser=float,
@@ -358,7 +368,7 @@ class YokogawaGS200Program(InstrumentChannel):
             "slope",
             label="the program slope time",
             unit="s",
-            vals=Numbers(0.0, 3600.0),
+            vals=MultiTypeAnd(Numbers(0.0, 3600.0), PermissiveMultiples(0.1)),
             get_cmd=":PROG:SLOP?",
             set_cmd=":PROG:SLOP {}",
             get_parser=float,
@@ -404,7 +414,8 @@ class YokogawaGS200Program(InstrumentChannel):
             label="step of the current program",
             get_cmd=":PROG:COUN?",
             set_cmd=":PROG:COUN {}",
-            vals=MultiType(Ints(1, 10000), Enum("MIN", "MAX")),
+            get_parser=int,
+            vals=MultiTypeOr(Ints(1, 10000), Enum("MIN", "MAX")),
         )
         """Parameter count"""
 
@@ -730,7 +741,12 @@ class YokogawaGS200(VisaInstrument):
             vals=Numbers(0, float("inf")),
             initial_value=0,
         )
-        """The ramp step when :attr:`ramp_mode` is set to "SOFTWARE"."""
+        """The ramp step when :attr:`ramp_mode` is set to "SOFTWARE".
+
+        When :attr:`ramp_mode` is "HARDWARE", defines the output delta
+        above which a ramp is used. If the delta is below this value,
+        the output is "jumped".
+        """
 
         self.connect_message()
 
@@ -750,6 +766,31 @@ class YokogawaGS200(VisaInstrument):
         self.measure._output = bool(state)
         return state
 
+    def _parse_delay(self, delay: float | None, step: float | None) -> float:
+        if delay is not None and delay != 0:
+            warnings.warn(
+                "The delay parameter is deprecated and will be removed in a future release. "
+                "Please use the ramp_rate and ramp_step parameters instead.",
+                QCoDeSDeprecationWarning,
+                stacklevel=3,
+            )
+            rate = step / delay
+        else:
+            rate = self.ramp_rate()
+        return rate
+
+    def _parse_step(self, step: float | None) -> float:
+        if step is not None:
+            warnings.warn(
+                "The step parameter is deprecated and will be removed in a future release. "
+                "Please use the ramp_step parameter instead.",
+                QCoDeSDeprecationWarning,
+                stacklevel=3,
+            )
+        else:
+            step = self.ramp_step()
+        return step
+
     def ramp_voltage(
         self,
         ramp_to: float,
@@ -768,25 +809,8 @@ class YokogawaGS200(VisaInstrument):
             ramp_mode: Use hardware or software ramps. See :attr:`ramp_mode`.
 
         """
-        if step is not None:
-            warnings.warn(
-                "The step parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_step parameter instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        else:
-            step = self.ramp_step()
-        if delay is not None:
-            warnings.warn(
-                "The delay parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_rate and ramp_step parameters instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            rate = step / delay
-        else:
-            rate = self.ramp_rate()
+        step = self._parse_step(step)
+        rate = self._parse_delay(delay, step)
 
         self._assert_mode("VOLT")
         with (
@@ -815,25 +839,8 @@ class YokogawaGS200(VisaInstrument):
             ramp_mode: Use hardware or software ramps. See :attr:`ramp_mode`.
 
         """
-        if step is not None:
-            warnings.warn(
-                "The step parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_step parameter instead.",
-                QCoDeSDeprecationWarning,
-                stacklevel=2,
-            )
-        else:
-            step = self.ramp_step()
-        if delay is not None:
-            warnings.warn(
-                "The delay parameter is deprecated and will be removed in a future release. "
-                "Please use the ramp_rate and ramp_step parameters instead.",
-                QCoDeSDeprecationWarning,
-                stacklevel=2,
-            )
-            rate = step / delay
-        else:
-            rate = self.ramp_rate()
+        step = self._parse_step(step)
+        rate = self._parse_delay(delay, step)
 
         self._assert_mode("CURR")
         with (
@@ -871,16 +878,19 @@ class YokogawaGS200(VisaInstrument):
                     # Nothing to do. We got the raw value because ramp_to already went through
                     # set-parsing including scaling and offsetting.
                     return
+                elif abs(delta) < self.ramp_step():
+                    self._set_output(ramp_to)
+                    return
 
                 slope_time = abs(delta) / self.ramp_rate()
 
                 # Clip to hardware limits
                 if slope_time > 3600:
-                    self.log.warning("Slope time > 3600s. Clipping.")
+                    self.log.info("Slope time > 3600s. Clipping.")
                 slope_time = min(slope_time, 3600)
 
                 if slope_time < 0.1:
-                    self.log.warning("Interval time < 0.1s. Clipping.")
+                    self.log.info("Interval time < 0.1s. Clipping.")
                 interval_time = max(slope_time, 0.1)
 
                 # Program the ramp; don't use the Program class to avoid overhead from
