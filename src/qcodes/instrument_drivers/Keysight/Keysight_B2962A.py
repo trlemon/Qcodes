@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Self
+from qcodes.parameters import create_on_off_val_mapping
 
 from typing_extensions import deprecated
 
@@ -115,7 +116,7 @@ class KeysightB2962AChannel(InstrumentChannel):
             "enable",
             get_cmd=f"OUTP{chan:d}?",
             set_cmd=f"OUTP{chan:d} {{:d}}",
-            val_mapping={"on": 1, "off": 0},
+            val_mapping=create_on_off_val_mapping(on_val=1, off_val=0),
         )
         """Parameter enable"""
 
@@ -131,7 +132,7 @@ class KeysightB2962AChannel(InstrumentChannel):
             "remote_sensing",
             get_cmd=f":SENS{chan:d}:REM?",
             set_cmd=f":SENS{chan:d}:REM {{:d}}",
-            val_mapping={"on": 1, "off": 0},
+            val_mapping=create_on_off_val_mapping(on_val=1, off_val=0),
         )
         """Parameter remote_sensing"""
 
