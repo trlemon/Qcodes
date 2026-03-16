@@ -62,7 +62,7 @@ class CurrentParameter(
         self.units = (p_unit, "A")
 
     def get_raw(self) -> tuple[ParamRawDataType, ...]:
-        assert isinstance(self.instrument, Ithaco_1211)
+        assert isinstance(self.instrument, Ithaco1211)
         volt = self._measured_param.get()
         current = (
             self.instrument.sens.get() * self.instrument.sens_factor.get()
