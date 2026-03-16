@@ -7,10 +7,8 @@ from math import prod
 from typing import TYPE_CHECKING, Literal
 
 from packaging import version as p_version
-from typing_extensions import deprecated
 
 from qcodes.dataset.linked_datasets.links import links_to_str
-from qcodes.utils import QCoDeSDeprecationWarning
 
 from ..descriptions.versioning import serialization as serial
 from .export_to_pandas import (
@@ -223,32 +221,6 @@ def _xarray_data_set_direct(
 
     ds = xr.Dataset(data_vars, coords=coords)
     return ds
-
-
-@deprecated(
-    "load_to_xarray_dataarray_dict is deprecated, use load_to_xarray_dataarray_dict instead",
-    category=QCoDeSDeprecationWarning,
-)
-def load_to_xarray_dataarray_dict(
-    dataset: DataSetProtocol,
-    datadict: Mapping[str, Mapping[str, npt.NDArray]],
-    *,
-    use_multi_index: Literal["auto", "always", "never"] = "auto",
-) -> dict[str, xr.DataArray]:
-    xr_datasets = _load_to_xarray_dataset_dict_no_metadata(
-        dataset, datadict, use_multi_index=use_multi_index
-    )
-    data_arrays: dict[str, xr.DataArray] = {}
-
-    for dataname, xr_dataset in xr_datasets.items():
-        data_array = xr_dataset[dataname]
-        _add_param_spec_to_xarray_coords(dataset, data_array)
-        paramspec_dict = _paramspec_dict_with_extras(dataset, str(dataname))
-        data_array.attrs.update(paramspec_dict.items())
-        _add_metadata_to_xarray(dataset, data_array)
-        data_arrays[dataname] = data_array
-
-    return data_arrays
 
 
 def load_to_xarray_dataset_dict(
