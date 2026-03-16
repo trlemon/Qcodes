@@ -364,15 +364,15 @@ class ChannelTuple(MetadatableWithName, Sequence[InstrumentModuleType]):
             self._paramclass,
         )
 
-    def get_channel_by_name(self: Self, names: str) -> InstrumentModuleType:
+    def get_channel_by_name(self: Self, name: str) -> InstrumentModuleType:
         """
-        Get a channel by name, or a ChannelTuple if multiple names are given.
+        Get a channel by name.
 
         Args:
-            names: channel name
+            name: channel name
 
         """
-        return self._channel_mapping[names]
+        return self._channel_mapping[name]
 
     def get_validator(self) -> ChannelTupleValidator:
         """

@@ -38,6 +38,7 @@ The following deprecated driver aliases have been removed. Use the replacement d
   Use ``load_to_xarray_dataset_dict`` instead.
 - ``InterDependencies_.non_dependencies`` property has been removed. Use ``top_level_parameters`` instead.
 - ``ChannelTuple.get_channel_by_name`` no longer accepts multiple names. Pass a single name to get a single
-  channel. Use ``get_channels_by_name`` for multiple channels.
+  channel. Use ``get_channels_by_name`` for multiple channels. The argument name has changed from `names` to `name`
+  to reflect this.
 - The ``has_current_rating`` keyword argument to ``AMIModel430`` has been removed as it had no effect.
 - The deprecated import of ``qcodes.utils.validators`` from ``qcodes.utils.__init__`` has been removed.
