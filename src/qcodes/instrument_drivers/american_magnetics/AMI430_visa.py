@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import time
-import warnings
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import ExitStack
@@ -22,7 +21,6 @@ from qcodes.instrument import (
 )
 from qcodes.math_utils import FieldVector
 from qcodes.parameters import Parameter
-from qcodes.utils import QCoDeSDeprecationWarning
 from qcodes.utils.types import NumberType
 from qcodes.validators import Anything, Bool, Enum, Ints, Numbers
 
@@ -194,15 +192,6 @@ class AMIModel430(VisaInstrument):
             **kwargs: Additional kwargs are passed to the base class
 
         """
-        if "has_current_rating" in kwargs.keys():
-            warnings.warn(
-                "'has_current_rating' kwarg to AMIModel430 "
-                "is deprecated and has no effect",
-                category=QCoDeSDeprecationWarning,
-            )
-            # this key should not be here so mypy complains about it
-            kwargs.pop("has_current_rating")  # type: ignore[typeddict-item]
-
         super().__init__(
             name,
             address,

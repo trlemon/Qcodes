@@ -1,0 +1,44 @@
+The following deprecated modules, drivers, and APIs have been removed.
+
+**Removed Modules:**
+
+
+The following deprecated compatibility modules have been removed. Please import from the locations listed in the
+`API documentation <https://microsoft.github.io/Qcodes/api/index.html>`_ instead:
+
+- ``qcodes.utils.command``
+- ``qcodes.utils.dataset`` (including ``qcodes.utils.dataset.doNd``)
+- ``qcodes.utils.helpers``
+- ``qcodes.utils.installation`` (use ``qcodes.extensions`` instead)
+- ``qcodes.utils.metadata``
+- ``qcodes.utils.plotting``
+- ``qcodes.utils.threading``
+- ``qcodes.utils.validators`` (use ``qcodes.validators`` instead)
+- ``qcodes.instrument.base``
+- ``qcodes.instrument.delegate.grouped_parameter`` (use ``qcodes.parameters`` instead)
+- ``qcodes.instrument.function`` (use ``qcodes.parameters`` instead)
+- ``qcodes.instrument.group_parameter`` (use ``qcodes.parameters`` instead)
+- ``qcodes.instrument.parameter`` (use ``qcodes.parameters`` instead)
+- ``qcodes.instrument.specialized_parameters`` (use ``qcodes.parameters`` instead)
+- ``qcodes.instrument.sweep_values`` (use ``qcodes.parameters`` instead)
+
+**Removed Drivers:**
+
+The following deprecated driver aliases have been removed. Use the replacement drivers listed below:
+
+- ``qcodes.instrument_drivers.Lakeshore.Model_325`` — use ``LakeshoreModel325`` instead.
+- ``qcodes.instrument_drivers.Lakeshore.Model_336`` — use ``LakeshoreModel336`` instead.
+- ``qcodes.instrument_drivers.Lakeshore.Model_372`` — use ``LakeshoreModel372`` instead.
+
+**Other Changes:**
+
+- ``DataSet.to_xarray_dataarray_dict``, ``DataSetInMem.to_xarray_dataarray_dict``, and
+  ``DataSetCache.to_xarray_dataarray_dict`` have been removed. Use ``to_xarray_dataset_dict`` instead.
+- ``load_to_xarray_dataarray_dict`` in ``qcodes.dataset.exporters.export_to_xarray`` has been removed.
+  Use ``load_to_xarray_dataset_dict`` instead.
+- ``InterDependencies_.non_dependencies`` property has been removed. Use ``top_level_parameters`` instead.
+- ``ChannelTuple.get_channel_by_name`` no longer accepts multiple names. Pass a single name to get a single
+  channel. Use ``get_channels_by_name`` for multiple channels. The argument name has changed from `names` to `name`
+  to reflect this.
+- The ``has_current_rating`` keyword argument to ``AMIModel430`` has been removed as it had no effect.
+- The deprecated import of ``qcodes.utils.validators`` from ``qcodes.utils.__init__`` has been removed.
