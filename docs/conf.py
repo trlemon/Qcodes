@@ -436,14 +436,7 @@ texinfo_show_urls = "footnote"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = get_intersphinx_mapping(
-    packages={"ipython", "matplotlib", "pandas", "python", "numpy", "xarray"}
-)
-# pyvisa not yet in intersphinx registry, so we add it manually
-# https://github.com/Quansight-Labs/intersphinx_registry/pull/96
-intersphinx_mapping.update(
-    {
-        "pyvisa": ("https://pyvisa.readthedocs.io/en/stable", None),
-    }
+    packages={"ipython", "matplotlib", "numpy", "pandas", "python", "pyvisa", "xarray"}
 )
 
 autoclass_content = "both"
