@@ -10,7 +10,6 @@ asttokens==3.0.1
     # via stack-data
 attrs==25.4.0
     # via
-    #   hypothesis
     #   jsonschema
     #   referencing
 autodocsumm==0.2.14
@@ -96,7 +95,6 @@ h5netcdf==1.8.1
 h5py==3.16.0
     # via
     #   qcodes (pyproject.toml)
-    #   h5netcdf
     #   hickle
     #   qcodes
     #   qcodes-loop
@@ -107,11 +105,15 @@ hypothesis==6.151.9
 idna==3.11
     # via requests
 imagesize==2.0.0
-    # via sphinx
+    # via
+    #   sphinx
+    #   sphinx-favicon
 importlib-metadata==8.7.1
     # via opentelemetry-api
 iniconfig==2.3.0
     # via pytest
+intersphinx-registry==0.2603.16
+    # via qcodes (pyproject.toml)
 ipykernel==7.2.0
     # via
     #   qcodes (pyproject.toml)
@@ -168,6 +170,8 @@ lazy-loader==0.5
     # via qcodes-loop
 libcst==1.8.6
     # via qcodes (pyproject.toml)
+librt==0.8.1
+    # via mypy
 locket==1.0.0
     # via partd
 lxml==6.0.2
@@ -216,6 +220,7 @@ numpy==2.4.3
     #   qcodes (pyproject.toml)
     #   broadbean
     #   contourpy
+    #   h5netcdf
     #   h5py
     #   hickle
     #   matplotlib
@@ -325,8 +330,6 @@ python-dateutil==2.9.0.post0
     #   jupyter-client
     #   matplotlib
     #   pandas
-pytz==2026.1.post1
-    # via pandas
 pyvisa==1.16.2
     # via
     #   qcodes (pyproject.toml)
@@ -337,11 +340,10 @@ pyvisa-sim==0.7.1
 pyyaml==6.0.3
     # via
     #   dask
+    #   libcst
     #   pyvisa-sim
     #   sphinx-jsonschema
     #   zhinst-timing-models
-pyyaml-ft==8.0.0
-    # via libcst
 pyzmq==27.1.0
     # via
     #   ipykernel
@@ -356,7 +358,10 @@ referencing==0.37.0
 requests==2.32.5
     # via
     #   sphinx
+    #   sphinx-favicon
     #   sphinx-jsonschema
+roman-numerals==4.1.0
+    # via roman-numerals-py
 roman-numerals-py==4.1.0
     # via sphinx
 rpds-py==0.30.0
@@ -367,8 +372,6 @@ ruamel-yaml==0.19.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-ruamel-yaml-clib==0.2.15
-    # via ruamel-yaml
 schema==0.7.8
     # via broadbean
 scipy==1.17.1
@@ -455,8 +458,6 @@ types-jsonschema==4.26.0.20260202
     # via qcodes (pyproject.toml)
 types-networkx==3.6.1.20260303
     # via qcodes (pyproject.toml)
-types-pytz==2026.1.1.20260304
-    # via pandas-stubs
 types-pywin32==311.0.0.20260317
     # via qcodes (pyproject.toml)
 types-requests==2.32.4.20260107
