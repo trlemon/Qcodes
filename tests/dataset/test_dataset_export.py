@@ -39,7 +39,6 @@ from qcodes.dataset.exporters.export_to_pandas import _generate_pandas_index
 from qcodes.dataset.exporters.export_to_xarray import _calculate_index_shape
 from qcodes.dataset.linked_datasets.links import links_to_str
 from qcodes.parameters import ManualParameter, Parameter, ParamSpecBase
-from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -867,16 +866,6 @@ def test_export_to_xarray_dataset_empty_ds(mock_empty_dataset: DataSet) -> None:
     _assert_xarray_metadata_is_as_expected(ds, mock_empty_dataset)
 
 
-def test_export_to_xarray_dataarray_empty_ds(mock_empty_dataset: DataSet) -> None:
-    with pytest.warns(QCoDeSDeprecationWarning, match="to_xarray_dataarray_dict"):
-        dad = mock_empty_dataset.to_xarray_dataarray_dict()  # pyright: ignore[reportDeprecated]
-    assert len(dad) == 2
-    assert len(dad["y"].coords) == 1
-    assert "x" in dad["y"].coords
-    assert len(dad["z"].coords) == 1
-    assert "x" in dad["z"].coords
-
-
 def test_export_to_xarray_dataset_dict_empty_ds(mock_empty_dataset: DataSet) -> None:
     dad = mock_empty_dataset.to_xarray_dataset_dict()
     assert len(dad) == 2
@@ -918,16 +907,6 @@ def test_export_to_xarray_extra_metadata(mock_dataset: DataSet) -> None:
 
     for array_name in ds.data_vars:
         assert "snapshot" not in ds[array_name].attrs.keys()
-
-
-def test_export_to_xarray_da_dict_extra_metadata(mock_dataset: DataSet) -> None:
-    mock_dataset.add_metadata("mytag", "somestring")
-    mock_dataset.add_metadata("myothertag", 1)
-    with pytest.warns(QCoDeSDeprecationWarning, match="to_xarray_dataarray_dict"):
-        da_dict = mock_dataset.to_xarray_dataarray_dict()  # pyright: ignore[reportDeprecated]
-
-    for datarray in da_dict.values():
-        _assert_xarray_metadata_is_as_expected(datarray, mock_dataset)
 
 
 def test_export_to_xarray_ds_dict_extra_metadata(mock_dataset: DataSet) -> None:
@@ -988,24 +967,6 @@ def test_to_xarray_ds_paramspec_metadata_is_preserved(
         assert xr_ds.data_vars[param_name].attrs == _get_expected_param_spec_attrs(
             mock_dataset_label_unit, param_name
         )
-
-
-def test_to_xarray_da_dict_paramspec_metadata_is_preserved(
-    mock_dataset_label_unit: DataSet,
-) -> None:
-    with pytest.warns(QCoDeSDeprecationWarning, match="to_xarray_dataarray_dict"):
-        xr_das = mock_dataset_label_unit.to_xarray_dataarray_dict()  # pyright: ignore[reportDeprecated]
-
-    for outer_param_name, xr_da in xr_das.items():
-        for param_name in xr_da.dims:
-            assert xr_da.coords[param_name].attrs == _get_expected_param_spec_attrs(
-                mock_dataset_label_unit, param_name
-            )
-        expected_param_spec_attrs = _get_expected_param_spec_attrs(
-            mock_dataset_label_unit, outer_param_name
-        )
-        for spec_name, spec_value in expected_param_spec_attrs.items():
-            assert xr_da.attrs[spec_name] == spec_value
 
 
 def test_to_xarray_ds_dict_paramspec_metadata_is_preserved(

@@ -1,7 +1,10 @@
 from typing import TYPE_CHECKING
 
+from typing_extensions import deprecated
+
 from qcodes.instrument import Instrument, InstrumentBaseKWArgs
 from qcodes.parameters import MultiParameter, Parameter, ParamRawDataType
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 from qcodes.validators import Bool, Enum
 
 if TYPE_CHECKING:
@@ -59,7 +62,7 @@ class CurrentParameter(
         self.units = (p_unit, "A")
 
     def get_raw(self) -> tuple[ParamRawDataType, ...]:
-        assert isinstance(self.instrument, Ithaco_1211)
+        assert isinstance(self.instrument, Ithaco1211)
         volt = self._measured_param.get()
         current = (
             self.instrument.sens.get() * self.instrument.sens_factor.get()
@@ -149,6 +152,11 @@ class Ithaco1211(Instrument):
         }
 
 
+@deprecated(
+    "Ithaco_1211 is deprecated. Please use qcodes.instrument_drivers.ithaco.Ithaco1211 instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
 class Ithaco_1211(Ithaco1211):
     """
     Old alias for Itaco1211. Will eventually be deprecated and removed.

@@ -1,0 +1,139 @@
+Legacy backwards-compatibility aliases across the ``instrument_drivers`` module have been
+deprecated. Users should migrate to the canonical class names listed below. All deprecated
+names will be removed in a future release.
+
+**AlazarTech**
+
+- Class ``AlazarTech_ATS9360`` is deprecated. Use ``AlazarTechATS9360`` instead.
+- Class ``AlazarTech_ATS9373`` is deprecated. Use ``AlazarTechATS9373`` instead.
+- Class ``AlazarTech_ATS9440`` is deprecated. Use ``AlazarTechATS9440`` instead.
+- Class ``AlazarTech_ATS9870`` is deprecated. Use ``AlazarTechATS9870`` instead.
+- Class ``Demodulation_AcquisitionController`` is deprecated. Use ``DemodulationAcquisitionController`` instead.
+
+**Basel**
+
+- Module ``qcodes.instrument_drivers.basel.sp983c`` is deprecated. Import from ``qcodes.instrument_drivers.basel`` instead.
+- Module ``qcodes.instrument_drivers.basel.sp983c_remote`` is deprecated. Import from ``qcodes.instrument_drivers.basel`` instead.
+
+**Galil**
+
+- Class ``VectorMode`` is deprecated. Use ``GalilDMC4133VectorMode`` instead.
+- Class ``Motor`` is deprecated. Use ``GalilDMC4133Motor`` instead.
+- Class ``DMC4133Controller`` is deprecated. Use ``GalilDMC4133Controller`` instead.
+- Class ``Arm`` is deprecated. Use ``GalilDMC4133Arm`` instead.
+
+**HP**
+
+- Module ``qcodes.instrument_drivers.HP.HP8133A`` is deprecated. Import from ``qcodes.instrument_drivers.HP`` instead.
+- Module ``qcodes.instrument_drivers.HP.HP8753D`` is deprecated. Import from ``qcodes.instrument_drivers.HP`` instead.
+- Class ``HP_83650A`` is deprecated. Use ``HP83650A`` instead.
+
+**Ithaco**
+
+- Class ``Ithaco_1211`` is deprecated. Use ``Ithaco1211`` instead.
+
+**Keithley / Tektronix**
+
+- Module ``qcodes.instrument_drivers.tektronix.Keithley_2450`` is deprecated. Import from ``qcodes.instrument_drivers.Keithley`` instead.
+- Module ``qcodes.instrument_drivers.tektronix.keithley_7510`` is deprecated. Import from ``qcodes.instrument_drivers.Keithley`` instead.
+- Module ``qcodes.instrument_drivers.tektronix.Keithley_s46`` is deprecated. Import from ``qcodes.instrument_drivers.Keithley`` instead.
+- Class ``Keithley_2000`` is deprecated. Use ``Keithley2000`` instead.
+- Class ``Keithley_2400`` is deprecated. Use ``Keithley2400`` instead.
+- Class ``Keithley_2600`` is deprecated. Use ``Keithley2600`` instead.
+- Class ``Keithley_3706A`` is deprecated. Use ``Keithley3706A`` instead.
+- Class ``Keithley_6500`` is deprecated. Use ``Keithley6500`` instead.
+- Class ``S46`` is deprecated. Use ``KeithleyS46`` instead.
+
+**Keysight**
+
+- Class ``B2962A`` is deprecated. Use ``KeysightB2962A`` instead.
+- Class ``MeasurementPair`` is deprecated. Use ``KeysightE4980AMeasurementPair`` instead.
+- Class ``E4980AMeasurements`` is deprecated. Use ``KeysightE4980AMeasurements`` instead.
+- Class ``Correction4980A`` is deprecated. Use ``KeysightE4980ACorrection`` instead.
+- Class ``BoundMeasurement`` is deprecated. Use ``KeysightInfiniiumBoundMeasurement`` instead.
+- Class ``UnboundMeasurement`` is deprecated. Use ``KeysightInfiniiumUnboundMeasurement`` instead.
+- Class ``InfiniiumFunction`` is deprecated. Use ``KeysightInfiniiumFunction`` instead.
+- Class ``InfiniiumChannel`` is deprecated. Use ``KeysightInfiniiumChannel`` instead.
+- Class ``Infiniium`` is deprecated. Use ``KeysightInfiniium`` instead.
+- Class ``N5173B`` is deprecated. Use ``KeysightN5173B`` instead.
+- Class ``N5183B`` is deprecated. Use ``KeysightN5183B`` instead.
+- Class ``N5222B`` is deprecated. Use ``KeysightN5222B`` instead.
+- Class ``N5230C`` is deprecated. Use ``KeysightN5230C`` instead.
+- Class ``N5245A`` is deprecated. Use ``KeysightN5245A`` instead.
+- Class ``N6705BChannel`` is deprecated. Use ``KeysightN6705BChannel`` instead.
+- Class ``N6705B`` is deprecated. Use ``KeysightN6705B`` instead.
+- Class ``N9030B`` is deprecated. Use ``KeysightN9030B`` instead.
+- Class ``P9374A`` is deprecated. Use ``KeysightP9374A`` instead.
+- Class ``KtM960x`` is deprecated. Use ``KeysightM960x`` instead.
+- Class ``KtMAWGChannel`` is deprecated. Use ``KeysightM9336AAWGChannel`` instead.
+- Class ``KtMAwg`` is deprecated. Use ``KeysightM9336A`` instead.
+
+**Keysight B1500**
+
+- Class ``B1511B`` is deprecated. Use ``KeysightB1511B`` instead.
+- Class ``IVSweeper`` is deprecated. Use ``KeysightB1500IVSweeper`` instead.
+- Class ``B1517A`` is deprecated. Use ``KeysightB1517A`` instead.
+- Class ``CVSweeper`` is deprecated. Use ``KeysightB1500CVSweeper`` instead.
+- Class ``B1520A`` is deprecated. Use ``KeysightB1520A`` instead.
+- Class ``CVSweepMeasurement`` is deprecated. Use ``KeysightB1500CVSweepMeasurement`` instead.
+- Class ``Correction`` is deprecated. Use ``KeysightB1500Correction`` instead.
+- Class ``FrequencyList`` is deprecated. Use ``KeysightB1500FrequencyList`` instead.
+- Class ``B1530A`` is deprecated. Use ``KeysightB1530A`` instead.
+
+**Mini-Circuits**
+
+- Class ``MC_channel`` (RC_SP4T) is deprecated. Use ``MiniCircuitsRCSP4TChannel`` instead.
+- Class ``RC_SP4T`` is deprecated. Use ``MiniCircuitsRCSP4T`` instead.
+- Class ``MC_channel`` (RC_SPDT) is deprecated. Use ``MiniCircuitsRCSPDTChannel`` instead.
+- Class ``RC_SPDT`` is deprecated. Use ``MiniCircuitsRCSPDT`` instead.
+- Class ``SwitchChannelUSB`` is deprecated. Use ``MiniCircuitsUsbSPDTSwitchChannel`` instead.
+- Class ``USB_SPDT`` is deprecated. Use ``MiniCircuitsUsbSPDT`` instead.
+- Class ``RUDAT_13G_90`` is deprecated. Use ``MiniCircuitsRudat13G90Base`` instead.
+- Class ``RUDAT_13G_90_USB`` is deprecated. Use ``MiniCircuitsRudat13G90Usb`` instead.
+
+**Oxford Instruments**
+
+- Class ``Triton`` is deprecated. Use ``OxfordTriton`` instead.
+- Class ``MercuryWorkerPS`` is deprecated. Use ``OxfordMercuryWorkerPS`` instead.
+- Class ``MercuryiPS`` is deprecated. Use ``OxfordMercuryiPS`` instead.
+
+**Rigol**
+
+- Module ``qcodes.instrument_drivers.rigol.DG1062`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DG4000`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DP821`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DP831`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DP832`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DS1074Z`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+- Module ``qcodes.instrument_drivers.rigol.DS4000`` is deprecated. Import from ``qcodes.instrument_drivers.rigol`` instead.
+
+**Rohde & Schwarz**
+
+- Class ``RohdeSchwarz_SGS100A`` is deprecated. Use ``RohdeSchwarzSGS100A`` instead.
+
+**Signal Hound**
+
+- Class ``SignalHound_USB_SA124B`` is deprecated. Use ``SignalHoundUSBSA124B`` instead.
+
+**Stanford Research Systems**
+
+- Class ``SRS_SG384`` is deprecated. Use ``SG384`` instead.
+
+**Tektronix**
+
+- Class ``AWG5208`` is deprecated. Use ``TektronixAWG5208`` instead.
+- Class ``AWG70002A`` is deprecated. Use ``TektronixAWG70002A`` instead.
+- Class ``AWGChannel`` is deprecated. Use ``Tektronix70000AWGChannel`` instead.
+- Class ``Tektronix_AWG5014`` is deprecated. Use ``TektronixAWG5014`` instead.
+- Class ``ModeError`` is deprecated. Use ``TektronixDPOModeError`` instead.
+
+**Weinschel**
+
+- Class ``Weinschel_8320`` is deprecated. Use ``Weinschel8320`` instead.
+
+**Yokogawa**
+
+- Class ``GS200Exception`` is deprecated. Use ``YokogawaGS200Exception`` instead.
+- Class ``GS200_Monitor`` is deprecated. Use ``YokogawaGS200Monitor`` instead.
+- Class ``GS200Program`` is deprecated. Use ``YokogawaGS200Program`` instead.
+- Class ``GS200`` is deprecated. Use ``YokogawaGS200`` instead.
