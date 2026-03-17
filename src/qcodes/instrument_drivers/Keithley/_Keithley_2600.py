@@ -1025,6 +1025,9 @@ class Keithley2600Channel(InstrumentChannel):
 
         """
 
+        # TODO: add override to x-axis names (so that actual parameter of interest is meausre
+        # and not just the smu channel name).
+
         # Helper to extract channel name from parameter
         def get_channel(param: ParameterBase) -> str:
             """Extract Lua channel name (smua/smub) from parameter."""
