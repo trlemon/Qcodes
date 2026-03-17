@@ -432,6 +432,20 @@ class Keithley2600Channel(InstrumentChannel):
             vals=vals.Numbers(0.001, 25),
         )
         """Number of power line cycles, used to perform measurements"""
+
+        self.four_wire_measurement: Parameter = self.add_parameter(
+            "four_wire_measurement",
+            label="Four-wire (remote) sense mode",
+            get_cmd=f"{self.channel}.sense",
+            get_parser=float,
+            set_cmd=f"{self.channel}.sense={{}}",
+            val_mapping=create_on_off_val_mapping(on_val=1, off_val=0),
+            docstring="Enables or disables four-wire (remote) sense mode. "
+            "When enabled, voltage is measured at the DUT using "
+            "separate sense leads, eliminating lead resistance errors.",
+        )
+        """Enable or disables four-wire (remote) sense mode."""
+
         # volt range
         # needs get after set (WilliamHPNielsen): why?
         self.sourcerange_v: Parameter = self.add_parameter(
