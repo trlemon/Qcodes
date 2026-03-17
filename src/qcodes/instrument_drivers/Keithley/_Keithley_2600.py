@@ -436,9 +436,9 @@ class Keithley2600Channel(InstrumentChannel):
         self.four_wire_measurement: Parameter = self.add_parameter(
             "four_wire_measurement",
             label="Four-wire (remote) sense mode",
-            get_cmd=f"{self.channel}.sense",
+            get_cmd=f"{channel}.sense",
             get_parser=float,
-            set_cmd=f"{self.channel}.sense={{}}",
+            set_cmd=f"{channel}.sense={{}}",
             val_mapping=create_on_off_val_mapping(on_val=1, off_val=0),
             docstring="Enables or disables four-wire (remote) sense mode. "
             "When enabled, voltage is measured at the DUT using "
