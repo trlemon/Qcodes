@@ -228,7 +228,8 @@ class Keithley2600MeasurementStatus(StrEnum):
 
 
 MeasurementStatus = Keithley2600MeasurementStatus
-"Alias for backwards compatibility. Will eventually be deprecated and removed"
+"""Alias for backwards compatibility. Will eventually be deprecated and removed"""
+
 
 _from_bits_tuple_to_status = {
     (0, 0): Keithley2600MeasurementStatus.NORMAL,

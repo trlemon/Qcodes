@@ -10,7 +10,6 @@ asttokens==3.0.1
     # via stack-data
 attrs==25.4.0
     # via
-    #   hypothesis
     #   jsonschema
     #   referencing
 autodocsumm==0.2.14
@@ -27,13 +26,13 @@ broadbean==0.14.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-certifi==2026.1.4
+certifi==2026.2.25
     # via requests
 cf-xarray==0.10.11
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-charset-normalizer==3.4.4
+charset-normalizer==3.4.6
     # via requests
 click==8.3.1
     # via
@@ -54,7 +53,7 @@ comm==0.2.3
     #   ipywidgets
 contourpy==1.3.3
     # via matplotlib
-coverage==7.13.3
+coverage==7.13.4
     # via
     #   qcodes (pyproject.toml)
     #   pytest-cov
@@ -83,7 +82,7 @@ executing==2.2.1
     # via stack-data
 fastjsonschema==2.21.2
     # via nbformat
-fonttools==4.61.1
+fonttools==4.62.1
     # via matplotlib
 fsspec==2026.2.0
     # via dask
@@ -93,26 +92,29 @@ h5netcdf==1.8.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-h5py==3.15.1
+h5py==3.16.0
     # via
     #   qcodes (pyproject.toml)
-    #   h5netcdf
     #   hickle
     #   qcodes
     #   qcodes-loop
 hickle==5.0.3
     # via qcodes-loop
-hypothesis==6.151.5
+hypothesis==6.151.9
     # via qcodes (pyproject.toml)
 idna==3.11
     # via requests
-imagesize==1.4.1
-    # via sphinx
+imagesize==2.0.0
+    # via
+    #   sphinx
+    #   sphinx-favicon
 importlib-metadata==8.7.1
     # via opentelemetry-api
 iniconfig==2.3.0
     # via pytest
-ipykernel==7.1.0
+intersphinx-registry==0.2603.16
+    # via qcodes (pyproject.toml)
+ipykernel==7.2.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -162,12 +164,14 @@ jupyterlab-pygments==0.3.0
     # via nbconvert
 jupyterlab-widgets==3.0.16
     # via ipywidgets
-kiwisolver==1.4.9
+kiwisolver==1.5.0
     # via matplotlib
-lazy-loader==0.4
+lazy-loader==0.5
     # via qcodes-loop
 libcst==1.8.6
     # via qcodes (pyproject.toml)
+librt==0.8.1
+    # via mypy
 locket==1.0.0
     # via partd
 lxml==6.0.2
@@ -211,11 +215,12 @@ networkx==3.6.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-numpy==2.4.2
+numpy==2.4.3
     # via
     #   qcodes (pyproject.toml)
     #   broadbean
     #   contourpy
+    #   h5netcdf
     #   h5py
     #   hickle
     #   matplotlib
@@ -231,7 +236,7 @@ numpy==2.4.2
     #   zhinst-timing-models
     #   zhinst-toolkit
     #   zhinst-utils
-opentelemetry-api==1.39.1
+opentelemetry-api==1.40.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -252,7 +257,7 @@ packaging==26.0
     #   sphinx
     #   versioningit
     #   xarray
-pandas==3.0.0
+pandas==3.0.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -262,18 +267,18 @@ pandas-stubs==3.0.0.260204
     # via qcodes (pyproject.toml)
 pandocfilters==1.5.1
     # via nbconvert
-parso==0.8.5
+parso==0.8.6
     # via jedi
 partd==1.4.2
     # via dask
 pathspec==1.0.4
     # via mypy
-pillow==12.1.0
+pillow==12.1.1
     # via
     #   qcodes (pyproject.toml)
     #   matplotlib
     #   qcodes
-platformdirs==4.5.1
+platformdirs==4.9.4
     # via jupyter-core
 pluggy==1.6.0
     # via
@@ -285,7 +290,7 @@ psutil==7.2.2
     # via ipykernel
 pure-eval==0.2.3
     # via stack-data
-pyarrow==23.0.0
+pyarrow==23.0.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -325,9 +330,7 @@ python-dateutil==2.9.0.post0
     #   jupyter-client
     #   matplotlib
     #   pandas
-pytz==2025.2
-    # via pandas
-pyvisa==1.16.1
+pyvisa==1.16.2
     # via
     #   qcodes (pyproject.toml)
     #   pyvisa-sim
@@ -337,11 +340,10 @@ pyvisa-sim==0.7.1
 pyyaml==6.0.3
     # via
     #   dask
+    #   libcst
     #   pyvisa-sim
     #   sphinx-jsonschema
     #   zhinst-timing-models
-pyyaml-ft==8.0.0
-    # via libcst
 pyzmq==27.1.0
     # via
     #   ipykernel
@@ -356,7 +358,10 @@ referencing==0.37.0
 requests==2.32.5
     # via
     #   sphinx
+    #   sphinx-favicon
     #   sphinx-jsonschema
+roman-numerals==4.1.0
+    # via roman-numerals-py
 roman-numerals-py==4.1.0
     # via sphinx
 rpds-py==0.30.0
@@ -367,11 +372,9 @@ ruamel-yaml==0.19.1
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
-ruamel-yaml-clib==0.2.15
-    # via ruamel-yaml
 schema==0.7.8
     # via broadbean
-scipy==1.17.0
+scipy==1.17.1
     # via qcodes (pyproject.toml)
 six==1.17.0
     # via python-dateutil
@@ -393,9 +396,9 @@ sphinx==8.2.3
     #   sphinxcontrib-towncrier
 sphinx-basic-ng==1.0.0b2
     # via furo
-sphinx-favicon==1.0.1
+sphinx-favicon==1.1.0
     # via qcodes (pyproject.toml)
-sphinx-issues==5.0.1
+sphinx-issues==6.0.0
     # via qcodes (pyproject.toml)
 sphinx-jsonschema==1.19.2
     # via qcodes (pyproject.toml)
@@ -417,7 +420,7 @@ stack-data==0.6.3
     # via ipython
 stringparser==0.7
     # via pyvisa-sim
-tabulate==0.9.0
+tabulate==0.10.0
     # via
     #   qcodes (pyproject.toml)
     #   qcodes
@@ -427,7 +430,7 @@ toolz==1.1.0
     # via
     #   dask
     #   partd
-tornado==6.5.4
+tornado==6.5.5
     # via
     #   ipykernel
     #   jupyter-client
@@ -453,19 +456,17 @@ traitlets==5.14.3
     #   nbsphinx
 types-jsonschema==4.26.0.20260202
     # via qcodes (pyproject.toml)
-types-networkx==3.6.1.20251220
+types-networkx==3.6.1.20260303
     # via qcodes (pyproject.toml)
-types-pytz==2025.2.0.20251108
-    # via pandas-stubs
-types-pywin32==311.0.0.20251008
+types-pywin32==311.0.0.20260317
     # via qcodes (pyproject.toml)
 types-requests==2.32.4.20260107
     # via
     #   qcodes (pyproject.toml)
     #   types-tqdm
-types-tabulate==0.9.0.20241207
+types-tabulate==0.10.0.20260308
     # via qcodes (pyproject.toml)
-types-tqdm==4.67.3.20260205
+types-tqdm==4.67.3.20260303
     # via qcodes (pyproject.toml)
 typing-extensions==4.15.0
     # via
@@ -496,7 +497,7 @@ versioningit==3.3.0
     #   broadbean
     #   qcodes
     #   qcodes-loop
-wcwidth==0.5.3
+wcwidth==0.6.0
     # via prompt-toolkit
 webencodings==0.5.1
     # via
@@ -508,13 +509,13 @@ websockets==16.0
     #   qcodes
 widgetsnbextension==4.0.15
     # via ipywidgets
-xarray==2026.1.0
+xarray==2026.2.0
     # via
     #   qcodes (pyproject.toml)
     #   cf-xarray
     #   qcodes
     #   qcodes-loop
-zhinst-core==26.1.0.361
+zhinst-core==26.1.2.4
     # via
     #   zhinst-toolkit
     #   zhinst-utils

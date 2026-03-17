@@ -3,10 +3,12 @@ import textwrap
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
+from typing_extensions import deprecated
 
 import qcodes.validators as vals
 from qcodes.instrument import InstrumentBaseKWArgs, InstrumentChannel
 from qcodes.parameters import Group, GroupParameter, MultiParameter, Parameter
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 from . import constants
 from .constants import MM, ChNr, ModuleKind
@@ -450,10 +452,17 @@ class KeysightB1500CVSweeper(InstrumentChannel["KeysightB1520A"]):
         return int(resp_dict["output_after_sweep"])
 
 
-CVSweeper = KeysightB1500CVSweeper
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "CVSweeper is deprecated. Please use qcodes.instrument_drivers.Keysight.keysightb1500.KeysightB1500CVSweeper instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class CVSweeper(KeysightB1500CVSweeper):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightB1520A(KeysightB1500Module):
@@ -1143,10 +1152,17 @@ class KeysightB1520A(KeysightB1500Module):
         self.setup_fnc_already_run = True
 
 
-B1520A = KeysightB1520A
-"""
-Alias for backwards compatiblitly
-"""
+@deprecated(
+    "B1520A is deprecated. Please use qcodes.instrument_drivers.Keysight.keysightb1500.KeysightB1520A instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class B1520A(KeysightB1520A):
+    """
+    Alias for backwards compatiblitly
+    """
+
+    pass
 
 
 class KeysightB1500CVSweepMeasurement(
@@ -1251,10 +1267,17 @@ class KeysightB1500CVSweepMeasurement(
         )
 
 
-CVSweepMeasurement = KeysightB1500CVSweepMeasurement
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "CVSweepMeasurement is deprecated. Please use qcodes.instrument_drivers.Keysight.keysightb1500.KeysightB1500CVSweepMeasurement instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class CVSweepMeasurement(KeysightB1500CVSweepMeasurement):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightB1500Correction(InstrumentChannel["KeysightB1520A"]):
@@ -1421,10 +1444,17 @@ class KeysightB1500Correction(InstrumentChannel["KeysightB1520A"]):
         return response_out
 
 
-Correction = KeysightB1500Correction
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "Correction is deprecated. Please use qcodes.instrument_drivers.Keysight.keysightb1500.KeysightB1500Correction instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class Correction(KeysightB1500Correction):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class KeysightB1500FrequencyList(InstrumentChannel["KeysightB1500Correction"]):
@@ -1481,7 +1511,14 @@ class KeysightB1500FrequencyList(InstrumentChannel["KeysightB1500Correction"]):
         return float(response)
 
 
-FrequencyList = KeysightB1500FrequencyList
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "FrequencyList is deprecated. Please use qcodes.instrument_drivers.Keysight.keysightb1500.KeysightB1500FrequencyList instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class FrequencyList(KeysightB1500FrequencyList):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
