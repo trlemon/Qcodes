@@ -5,7 +5,10 @@ from functools import partial
 from time import sleep
 from typing import TYPE_CHECKING
 
+from typing_extensions import deprecated
+
 from qcodes.instrument import InstrumentBaseKWArgs, IPInstrument
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 from qcodes.validators import Enum, Ints, Numbers
 
 if TYPE_CHECKING:
@@ -602,5 +605,12 @@ class OxfordTriton(IPInstrument):
         return msg.rsplit(f"{key}:", maxsplit=1)[-1]
 
 
-Triton = OxfordTriton
-"""Alias for backwards compatibility"""
+@deprecated(
+    "Triton is deprecated. Please use qcodes.instrument_drivers.oxford.OxfordTriton instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class Triton(OxfordTriton):
+    """Alias for backwards compatibility"""
+
+    pass

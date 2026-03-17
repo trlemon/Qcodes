@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 import numpy.typing as npt
 from packaging import version
+from typing_extensions import deprecated
 
 from qcodes.instrument import (
     InstrumentBaseKWArgs,
@@ -16,6 +17,7 @@ from qcodes.instrument import (
     VisaInstrumentKWArgs,
 )
 from qcodes.math_utils import FieldVector
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -290,10 +292,17 @@ class OxfordMercuryWorkerPS(InstrumentChannel["OxfordMercuryiPS"]):
         #  the intended value
 
 
-MercuryWorkerPS = OxfordMercuryWorkerPS
-"""
-Alias for backwards compatibility
-"""
+@deprecated(
+    "MercuryWorkerPS is deprecated. Please use qcodes.instrument_drivers.oxford.OxfordMercuryWorkerPS instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class MercuryWorkerPS(OxfordMercuryWorkerPS):
+    """
+    Alias for backwards compatibility
+    """
+
+    pass
 
 
 class OxfordMercuryiPS(VisaInstrument):
@@ -723,5 +732,12 @@ class OxfordMercuryiPS(VisaInstrument):
         return base_resp
 
 
-MercuryiPS = OxfordMercuryiPS
-"""Alias for backwards compatibility"""
+@deprecated(
+    "MercuryiPS is deprecated. Please use qcodes.instrument_drivers.oxford.OxfordMercuryiPS instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class MercuryiPS(OxfordMercuryiPS):
+    """Alias for backwards compatibility"""
+
+    pass

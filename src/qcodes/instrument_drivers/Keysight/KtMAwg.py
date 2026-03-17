@@ -2,8 +2,11 @@ import ctypes
 from functools import partial
 from typing import TYPE_CHECKING
 
+from typing_extensions import deprecated
+
 from qcodes.instrument import Instrument, InstrumentBaseKWArgs, InstrumentChannel
 from qcodes.parameters import Parameter, create_on_off_val_mapping
+from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 from qcodes.validators import Numbers
 
 from . import KtMAwgDefs
@@ -410,8 +413,23 @@ class KeysightM9336A(Instrument):
         super().close()
 
 
-KtMAWGChannel = KeysightM9336AAWGChannel
-"Alias for backwards compatibility"
+@deprecated(
+    "KtMAWGChannel is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightM9336AAWGChannel instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class KtMAWGChannel(KeysightM9336AAWGChannel):
+    """Alias for backwards compatibility"""
 
-KtMAwg = KeysightM9336A
-"Alias for backwards compatibility"
+    pass
+
+
+@deprecated(
+    "KtMAwg is deprecated. Please use qcodes.instrument_drivers.Keysight.KeysightM9336A instead.",
+    category=QCoDeSDeprecationWarning,
+    stacklevel=1,
+)
+class KtMAwg(KeysightM9336A):
+    """Alias for backwards compatibility"""
+
+    pass
