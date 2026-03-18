@@ -434,7 +434,7 @@ class Keithley2600Channel(InstrumentChannel):
         )
         """Number of power line cycles, used to perform measurements"""
 
-        self.four_wire_measurement: Parameter = self.add_parameter(
+        self.four_wire_measurement: Parameter[bool, Self] = self.add_parameter(
             "four_wire_measurement",
             label="Four-wire (remote) sense mode",
             get_cmd=f"{channel}.sense",
