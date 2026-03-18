@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Self
-from qcodes.parameters import create_on_off_val_mapping
 
 from typing_extensions import deprecated
 
@@ -10,6 +9,7 @@ from qcodes.instrument import (
     VisaInstrument,
     VisaInstrumentKWArgs,
 )
+from qcodes.parameters import create_on_off_val_mapping
 from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
