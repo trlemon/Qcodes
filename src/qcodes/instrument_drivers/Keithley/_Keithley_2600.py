@@ -4,7 +4,7 @@ import logging
 import struct
 import warnings
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, Self
 
 import numpy as np
 import numpy.typing as npt
