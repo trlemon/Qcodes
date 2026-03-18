@@ -11,6 +11,7 @@ import numpy as np
 import numpy.typing as npt
 
 import qcodes.validators as vals
+from qcodes.extensions.infer import infer_instrument
 from qcodes.instrument import (
     Instrument,
     InstrumentChannel,
@@ -1025,28 +1026,12 @@ class Keithley2600Channel(InstrumentChannel):
 
         """
 
-        # TODO: add override to x-axis names (so that actual parameter of interest is meausre
-        # and not just the smu channel name).
-
-        # Helper to extract channel name from parameter
-        def get_channel(param: ParameterBase) -> str:
-            """Extract Lua channel name (smua/smub) from parameter."""
-            inst = param.instrument
-
-            if not isinstance(inst, Keithley2600Channel):
-                raise TypeError(
-                    f"Parameter '{param.name}' must belong to a Keithley2600Channel. "
-                    f"Got instrument of type {type(inst).__name__}."
-                )
-
-            return inst.channel
-
         # Get setpoints from inner sweep to derive start/stop
         inner_setpoints = inner.get_setpoints()
         inner_start = float(inner_setpoints[0])
         inner_stop = float(inner_setpoints[-1])
         inner_param = cast("Parameter", inner.param)
-        inner_channel = get_channel(inner_param)
+        inner_channel = infer_instrument(inner_param).channel
 
         channel_to_measure = inner_channel
 
@@ -1076,7 +1061,7 @@ class Keithley2600Channel(InstrumentChannel):
             outer_start = float(outer_setpoints[0])
             outer_stop = float(outer_setpoints[-1])
             outer_param = cast("Parameter", outer.param)
-            outer_channel = get_channel(outer_param)
+            outer_channel = infer_instrument(outer_param).channel
 
             config.outer_start = outer_start
             config.outer_stop = outer_stop
