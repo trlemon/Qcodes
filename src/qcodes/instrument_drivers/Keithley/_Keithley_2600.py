@@ -11,7 +11,7 @@ import numpy as np
 import numpy.typing as npt
 
 import qcodes.validators as vals
-from qcodes.extensions.infer import infer_instrument
+from qcodes.extensions.infer import infer_channel
 from qcodes.instrument import (
     Instrument,
     InstrumentChannel,
@@ -1031,7 +1031,7 @@ class Keithley2600Channel(InstrumentChannel):
         inner_start = float(inner_setpoints[0])
         inner_stop = float(inner_setpoints[-1])
         inner_param = cast("Parameter", inner.param)
-        inner_channel = infer_instrument(inner_param).channel
+        inner_channel = infer_channel(inner_param).channel
 
         channel_to_measure = inner_channel
 
@@ -1061,7 +1061,7 @@ class Keithley2600Channel(InstrumentChannel):
             outer_start = float(outer_setpoints[0])
             outer_stop = float(outer_setpoints[-1])
             outer_param = cast("Parameter", outer.param)
-            outer_channel = infer_instrument(outer_param).channel
+            outer_channel = infer_channel(outer_param).channel
 
             config.outer_start = outer_start
             config.outer_stop = outer_stop
