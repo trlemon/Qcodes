@@ -208,6 +208,7 @@ def test_fast_sweep_parameters(smus) -> None:
         assert smu.fastsweep.label == "Voltage"
 
         # Test the inner setpoints
+        assert smu.fastsweep_inner_setpoints is not None
         setpoints = smu.fastsweep_inner_setpoints()
         expected_setpoints = np.linspace(start_val, stop_val, npts)
         np.testing.assert_array_almost_equal(setpoints, expected_setpoints)
@@ -260,8 +261,8 @@ def test_fastsweep_2d_parameters(driver) -> None:
 
     # Check setpoints are properly configured for 2D
     assert len(smua.fastsweep.setpoints) == 2
-    assert smua.fastsweep.setpoints[0] == smua.fastsweep_outer_setpoints
-    assert smua.fastsweep.setpoints[1] == smua.fastsweep_inner_setpoints
+    assert smua.fastsweep.setpoints[0] is smua.fastsweep_outer_setpoints
+    assert smua.fastsweep.setpoints[1] is smua.fastsweep_inner_setpoints
 
 
 def test_fastsweep_2d_execution(driver) -> None:
@@ -312,3 +313,42 @@ def test_fastsweep_channel_detection(driver) -> None:
         result = smub.fastsweep()
 
     assert result.shape == (5, 10)
+
+
+def test_fastsweep_reconfigure_creates_fresh_setpoints(driver) -> None:
+    """Test that calling setup_fastsweep twice creates fresh setpoint parameters.
+
+    Regression test: previously, setpoint parameters were reused and their
+    cached _param_spec could become stale, causing KeyError in add_result
+    because the interdependencies were built with an old register_name.
+
+    With fresh parameters, each call gets a new param_spec that is always
+    consistent with the current sweep configuration.
+    """
+    smua = driver.smua
+    smub = driver.smub
+
+    # First configuration on smua
+    sweep1 = LinSweep(smua.volt, 0.0, 1.0, 50)
+    smua.setup_fastsweep(sweep1, mode="IV")
+
+    first_inner = smua.fastsweep_inner_setpoints
+    assert first_inner is not None
+    spec1_name = first_inner.param_spec.name
+    assert spec1_name == first_inner.register_name
+    assert spec1_name == smua.volt.full_name
+
+    # Second configuration on smub with a different parameter
+    sweep2 = LinSweep(smub.volt, -0.5, 0.5, 20)
+    smub.setup_fastsweep(sweep2, mode="IV")
+
+    second_inner = smub.fastsweep_inner_setpoints
+    assert second_inner is not None
+    spec2_name = second_inner.param_spec.name
+    assert spec2_name == second_inner.register_name
+    assert spec2_name == smub.volt.full_name
+
+    # The two setpoint parameters must be distinct objects
+    assert first_inner is not second_inner
+    assert spec1_name != spec2_name
+    assert spec2_name != spec1_name

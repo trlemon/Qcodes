@@ -27,7 +27,7 @@ from qcodes.parameters import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
 
     from typing_extensions import Unpack
 
@@ -109,50 +109,32 @@ class _FastSweepConfig:
         return np.linspace(self.outer_start, self.outer_stop, self.outer_npts)
 
 
-class _FastSweepInnerSetpoints(Parameter[npt.NDArray, "Keithley2600Channel"]):
-    """Parameter that returns the inner axis setpoints for a fastsweep."""
+def _make_setpoint_parameter(
+    name: str,
+    label: str,
+    unit: str,
+    shape: tuple[int, ...],
+    get_values: Callable[[], npt.NDArray],
+    register_name: str | None = None,
+) -> Parameter:
+    """Create a standalone setpoint parameter for fastsweep.
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self._source_full_name: str | None = None
-
-    @property
-    def register_name(self) -> str:
-        """Return source parameter's full_name for dataset registration."""
-        if self._source_full_name is not None:
-            return self._source_full_name
-        return self.full_name
-
-    def get_raw(self) -> npt.NDArray:
-        if self.instrument is None:
-            raise RuntimeError("No instrument attached to Parameter.")
-        config = self.instrument._fastsweep_config
-        if config is None:
-            raise RuntimeError("Fastsweep not configured. Call setup_fastsweep first.")
-        return config.get_inner_setpoints()
-
-
-class _FastSweepOuterSetpoints(Parameter[npt.NDArray, "Keithley2600Channel"]):
-    """Parameter that returns the outer axis setpoints for a 2D fastsweep."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        self._source_full_name: str | None = None
-
-    @property
-    def register_name(self) -> str:
-        """Return source parameter's full_name for dataset registration."""
-        if self._source_full_name is not None:
-            return self._source_full_name
-        return self.full_name
-
-    def get_raw(self) -> npt.NDArray:
-        if self.instrument is None:
-            raise RuntimeError("No instrument attached to Parameter.")
-        config = self.instrument._fastsweep_config
-        if config is None:
-            raise RuntimeError("Fastsweep not configured. Call setup_fastsweep first.")
-        return config.get_outer_setpoints()
+    A fresh parameter is created on each call so that its ``param_spec``
+    is always consistent with the current sweep configuration.
+    """
+    p: Parameter = Parameter(
+        name=name,
+        label=label,
+        unit=unit,
+        snapshot_value=False,
+        vals=vals.Arrays(shape=shape),
+        set_cmd=False,
+        register_name=register_name,
+    )
+    # Attach a get that returns the setpoint values
+    p.get = get_values  # type: ignore[assignment]
+    p._gettable = True
+    return p
 
 
 class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel"]):
@@ -171,7 +153,15 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
     """
 
     def _update_metadata(self, config: _FastSweepConfig) -> None:
-        """Update parameter metadata based on sweep configuration."""
+        """Update parameter metadata based on sweep configuration.
+
+        Creates fresh setpoint parameters each time so that their
+        ``param_spec`` is always consistent with the current sweep
+        configuration — no cache invalidation needed.
+        """
+        # Invalidate our own cached param_spec since unit/label/vals will change
+        self._param_spec = None
+
         mode = config.mode
 
         match mode:
@@ -182,7 +172,6 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
                 self.unit = "V"
                 self.label = "Voltage"
 
-        # Build labels that include original parameter info for traceability
         inner_full_label = config.inner_param_name
         if config.inner_param_full_name:
             inner_full_label = (
@@ -190,14 +179,14 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
             )
 
         if self.instrument is not None:
-            # Set source name so dataset uses original parameter's name
-            self.instrument.fastsweep_inner_setpoints._source_full_name = (
-                config.inner_param_full_name
-            )
-            self.instrument.fastsweep_inner_setpoints.unit = config.inner_param_unit
-            self.instrument.fastsweep_inner_setpoints.label = inner_full_label
-            self.instrument.fastsweep_inner_setpoints.vals = vals.Arrays(
-                shape=(config.inner_npts,)
+            # Create a fresh inner setpoint parameter
+            self.instrument.fastsweep_inner_setpoints = _make_setpoint_parameter(
+                name="fastsweep_inner_setpoints",
+                label=inner_full_label,
+                unit=config.inner_param_unit,
+                shape=(config.inner_npts,),
+                get_values=config.get_inner_setpoints,
+                register_name=config.inner_param_full_name,
             )
 
             if config.is_2d:
@@ -208,15 +197,16 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
                         f"{config.outer_param_name} ({config.outer_param_full_name})"
                     )
 
-                # Set source name so dataset uses original parameter's name
-                self.instrument.fastsweep_outer_setpoints._source_full_name = (
-                    config.outer_param_full_name
+                # Create a fresh outer setpoint parameter
+                self.instrument.fastsweep_outer_setpoints = _make_setpoint_parameter(
+                    name="fastsweep_outer_setpoints",
+                    label=outer_full_label,
+                    unit=config.outer_param_unit,
+                    shape=(config.outer_npts,),
+                    get_values=config.get_outer_setpoints,
+                    register_name=config.outer_param_full_name,
                 )
-                self.instrument.fastsweep_outer_setpoints.unit = config.outer_param_unit
-                self.instrument.fastsweep_outer_setpoints.label = outer_full_label
-                self.instrument.fastsweep_outer_setpoints.vals = vals.Arrays(
-                    shape=(config.outer_npts,)
-                )
+
                 self.setpoints = (
                     self.instrument.fastsweep_outer_setpoints,
                     self.instrument.fastsweep_inner_setpoints,
@@ -852,29 +842,14 @@ class Keithley2600Channel(InstrumentChannel):
         # Internal fastsweep configuration - set via setup_fastsweep()
         self._fastsweep_config: _FastSweepConfig | None = None
 
-        # Setpoint parameters for fastsweep
-        self.fastsweep_inner_setpoints: _FastSweepInnerSetpoints = self.add_parameter(
-            name="fastsweep_inner_setpoints",
-            label="Sweep setpoints",
-            snapshot_value=False,
-            vals=vals.Arrays(shape=(1,)),  # Placeholder, updated by setup_fastsweep
-            parameter_class=_FastSweepInnerSetpoints,
-        )
-        """Holds inner axis setpoints for fastsweep."""
-
-        self.fastsweep_outer_setpoints: _FastSweepOuterSetpoints = self.add_parameter(
-            name="fastsweep_outer_setpoints",
-            label="Outer sweep setpoints",
-            snapshot_value=False,
-            vals=vals.Arrays(shape=(1,)),  # Placeholder, updated by setup_fastsweep
-            parameter_class=_FastSweepOuterSetpoints,
-        )
-        """Holds outer axis setpoints for 2D fastsweep."""
+        # Setpoint parameters for fastsweep — created fresh by setup_fastsweep()
+        self.fastsweep_inner_setpoints: Parameter | None = None
+        self.fastsweep_outer_setpoints: Parameter | None = None
 
         self.fastsweep: LuaSweepParameter = self.add_parameter(
             "fastsweep",
             vals=vals.Arrays(shape=(1,)),  # Placeholder, updated by setup_fastsweep
-            setpoints=(self.fastsweep_inner_setpoints,),  # Updated by setup_fastsweep
+            setpoints=(),  # Updated by setup_fastsweep
             parameter_class=LuaSweepParameter,
             docstring="Performs a fast sweep using on-instrument Lua scripts. "
             "Configure using setup_fastsweep() with LinSweep-like object(s). "
