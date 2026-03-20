@@ -129,11 +129,9 @@ def _make_setpoint_parameter(
         snapshot_value=False,
         vals=vals.Arrays(shape=shape),
         set_cmd=False,
+        get_cmd=get_values,
         register_name=register_name,
     )
-    # Attach a get that returns the setpoint values
-    p.get = get_values  # type: ignore[assignment]
-    p._gettable = True
     return p
 
 
