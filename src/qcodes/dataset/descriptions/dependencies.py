@@ -10,13 +10,11 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from itertools import chain, product
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
 import networkx as nx
-from typing_extensions import deprecated
 
 from qcodes.parameters import ParamSpecBase
-from qcodes.utils import QCoDeSDeprecationWarning
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -150,9 +148,7 @@ class InterDependencies_:  # noqa: PLW1641
             for edge in self.graph.edges
             if self.graph.edges[edge]["interdep_type"] == "depends_on"
         ]
-        # the type annotations does not currently encode that edge_subgraph of a DiGraph
-        # is a DiGraph
-        return cast("nx.DiGraph[str]", self.graph.edge_subgraph(depends_on_edges))
+        return self.graph.edge_subgraph(depends_on_edges)
 
     @property
     def _inference_subgraph(self) -> nx.DiGraph[str]:
@@ -161,9 +157,7 @@ class InterDependencies_:  # noqa: PLW1641
             for edge in self.graph.edges
             if self.graph.edges[edge]["interdep_type"] == "inferred_from"
         ]
-        # the type annotations does not currently encode that edge_subgraph of a DiGraph
-        # is a DiGraph
-        return cast("nx.DiGraph[str]", self.graph.edge_subgraph(inferred_from_edges))
+        return self.graph.edge_subgraph(inferred_from_edges)
 
     def extend(
         self,
@@ -267,23 +261,6 @@ class InterDependencies_:  # noqa: PLW1641
         Return the ParamSpecBase objects of this instance
         """
         return tuple(paramspec for _, paramspec in self.graph.nodes(data="value"))
-
-    @property
-    @deprecated(
-        "non_dependencies returns incorrect results and is deprecated. Use top_level_parameters as an alternative.",
-        category=QCoDeSDeprecationWarning,
-    )
-    def non_dependencies(self) -> tuple[ParamSpecBase, ...]:
-        """
-        Return all parameters that are not dependencies of other parameters,
-        i.e. return the top level parameters. Returned tuple is sorted by
-        parameter names.
-        """
-        non_dependencies = tuple(self.standalones) + tuple(self.dependencies.keys())
-        non_dependencies_sorted_by_name = tuple(
-            sorted(non_dependencies, key=lambda ps: ps.name)
-        )
-        return non_dependencies_sorted_by_name
 
     @property
     def top_level_parameters(self) -> tuple[ParamSpecBase, ...]:

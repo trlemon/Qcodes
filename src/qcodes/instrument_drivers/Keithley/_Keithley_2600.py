@@ -5,7 +5,7 @@ import struct
 import warnings
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, Literal, Protocol, cast
+from typing import TYPE_CHECKING, Any, Literal, Protocol, Self, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -489,7 +489,8 @@ class Keithley2600MeasurementStatus(StrEnum):
 
 
 MeasurementStatus = Keithley2600MeasurementStatus
-"Alias for backwards compatibility. Will eventually be deprecated and removed"
+"""Alias for backwards compatibility. Will eventually be deprecated and removed"""
+
 
 _from_bits_tuple_to_status = {
     (0, 0): Keithley2600MeasurementStatus.NORMAL,
@@ -693,6 +694,20 @@ class Keithley2600Channel(InstrumentChannel):
             vals=vals.Numbers(0.001, 25),
         )
         """Number of power line cycles, used to perform measurements"""
+
+        self.four_wire_measurement: Parameter[bool, Self] = self.add_parameter(
+            "four_wire_measurement",
+            label="Four-wire (remote) sense mode",
+            get_cmd=f"{channel}.sense",
+            get_parser=float,
+            set_cmd=f"{channel}.sense={{}}",
+            val_mapping=create_on_off_val_mapping(on_val=1, off_val=0),
+            docstring="Enables or disables four-wire (remote) sense mode. "
+            "When enabled, voltage is measured at the DUT using "
+            "separate sense leads, eliminating lead resistance errors.",
+        )
+        """Enable or disables four-wire (remote) sense mode."""
+
         # volt range
         # needs get after set (WilliamHPNielsen): why?
         self.sourcerange_v: Parameter = self.add_parameter(
