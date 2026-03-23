@@ -2271,3 +2271,60 @@ def test_with_without_shape_is_the_same(experiment: Experiment) -> None:
     # however data for a given coordinate is the same
     assert bool((dsx2 - dsx1)["z"].max() == 0)
     assert bool((dsx2 - dsx1)["x"].max() == 0)
+
+
+def test_incomplete_measurement_with_shared_setpoint(
+    experiment: Experiment,
+) -> None:
+    """
+    Regression test for a MergeError when exporting an incomplete measurement
+    where a shared setpoint parameter ends up as a coordinate in one
+    sub-dataset and a data variable in another.
+
+    The scenario: a 2D sweep (x, y) where y is an array-type parameter with
+    constant values (non-unique MultiIndex), plus a 1D dependent on x alone.
+    When the measurement is incomplete (actual rows < declared shape), the
+    direct export path is bypassed and the pandas fallback is used.  The 1D
+    dependent produces a unique index (x as coordinate) while the 2D
+    dependents produce a non-unique index (x becomes a data variable via
+    reset_index).  Without the fix, xr.merge raises MergeError because x has
+    conflicting roles across sub-datasets.
+    """
+    n_expected = 10
+    n_actual = 7  # incomplete: fewer rows than declared shape
+    n_array = 5
+
+    x_vals = np.linspace(0.0, 1.0, n_actual)
+    # y is constant across all points (triggers non-unique MultiIndex)
+    y_const = 0.42
+
+    meas = Measurement(exp=experiment, name="incomplete_shared_setpoint")
+    meas.register_custom_parameter("x", paramtype="numeric")
+    meas.register_custom_parameter("y", paramtype="array")
+    meas.register_custom_parameter("signal_2d", setpoints=("x", "y"), paramtype="array")
+    meas.register_custom_parameter("signal_1d", setpoints=("x",), paramtype="numeric")
+    # Declare shapes larger than actual data to force pandas fallback
+    meas.set_shapes({"signal_2d": (n_expected, n_array), "signal_1d": (n_expected,)})
+
+    with meas.run() as datasaver:
+        for ix in range(n_actual):
+            x = float(x_vals[ix])
+            y_arr = np.full(n_array, y_const)
+            sig_2d = np.arange(n_array, dtype=float) * x
+            datasaver.add_result(
+                ("x", x),
+                ("y", y_arr),
+                ("signal_2d", sig_2d),
+                ("signal_1d", x * 2.0),
+            )
+
+    ds = datasaver.dataset
+
+    # This previously raised:
+    # MergeError: unable to determine if these variables should be
+    # coordinates or not in the merged result: {'x'}
+    xr_ds = ds.to_xarray_dataset()
+
+    assert "signal_1d" in xr_ds.data_vars
+    assert "signal_2d" in xr_ds.data_vars
+    assert "x" in xr_ds.coords
