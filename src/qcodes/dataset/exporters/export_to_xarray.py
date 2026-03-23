@@ -286,6 +286,25 @@ def load_to_xarray_dataset(
         dataset, data, use_multi_index=use_multi_index
     )
 
+    # When shapes are inconsistent (e.g. incomplete measurements), different
+    # code paths may represent the same setpoint parameter as a coordinate in
+    # some sub-datasets and a data variable in others.  xr.merge refuses to
+    # combine them when the role is ambiguous, so we normalise first by
+    # promoting any such variable to a coordinate everywhere.
+    all_coords: set[Hashable] = set()
+    all_data_vars: set[Hashable] = set()
+    for xr_ds in xr_dataset_dict.values():
+        all_coords.update(xr_ds.coords)
+        all_data_vars.update(xr_ds.data_vars)
+    conflicting = all_coords & all_data_vars
+    if conflicting:
+        for key in xr_dataset_dict:
+            vars_to_promote = [
+                v for v in conflicting if v in xr_dataset_dict[key].data_vars
+            ]
+            if vars_to_promote:
+                xr_dataset_dict[key] = xr_dataset_dict[key].set_coords(vars_to_promote)
+
     xr_dataset = xr.merge(xr_dataset_dict.values(), compat="equals", join="outer")
 
     _add_param_spec_to_xarray_coords(dataset, xr_dataset)

@@ -1,0 +1,7 @@
+Fixed ``to_xarray_dataset`` failing with a ``MergeError`` when exporting
+incomplete measurements where a shared setpoint parameter was treated as a
+coordinate in some sub-datasets and a data variable in others. This could
+happen when the actual data shape did not match the declared shape (e.g. a
+measurement that was interrupted before completion) and one of the sweep axes
+had non-unique values, causing different export code paths to disagree on the
+role of the shared setpoint.
