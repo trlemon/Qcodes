@@ -458,7 +458,7 @@ types-jsonschema==4.26.0.20260202
     # via qcodes (pyproject.toml)
 types-networkx==3.6.1.20260321
     # via qcodes (pyproject.toml)
-types-pywin32==311.0.0.20260317
+types-pywin32==311.0.0.20260323
     # via qcodes (pyproject.toml)
 types-requests==2.32.4.20260107
     # via
