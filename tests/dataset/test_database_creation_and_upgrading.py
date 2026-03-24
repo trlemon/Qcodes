@@ -193,16 +193,19 @@ def test_initialise_database_with_journal_mode(tmp_path: Path) -> None:
     conn.close()
 
 
-def test_initialise_or_create_database_at_sets_config(tmp_path: Path) -> None:
+def test_initialise_or_create_database_at_sets_config(
+    tmp_path: Path, request: pytest.FixtureRequest
+) -> None:
     db_location = str(tmp_path / "session.db")
     old_location = qc.config["core"]["db_location"]
+    request.addfinalizer(
+        lambda: qc.config["core"].__setitem__("db_location", old_location)
+    )
 
     initialise_or_create_database_at(db_location)
 
     assert qc.config["core"]["db_location"] == db_location
     assert os.path.exists(db_location)
-    # restore
-    qc.config["core"]["db_location"] = old_location
 
 
 def test_initialise_or_create_database_at_with_journal_mode(tmp_path: Path) -> None:
