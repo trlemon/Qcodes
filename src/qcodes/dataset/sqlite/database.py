@@ -254,7 +254,7 @@ def initialise_or_create_database_at(
     db_file_with_abs_path: str | Path, journal_mode: JournalMode | None = "WAL"
 ) -> None:
     """
-    Initializes or creates a database at the specified location and configures QCoDeS to use
+    Initialises or creates a database at the specified location and configures QCoDeS to use
     this as the default database for the duration of the session.
 
 
@@ -272,10 +272,10 @@ def initialise_or_create_database_at(
 
 @contextmanager
 def initialised_database_at(
-    db_file_with_abs_path: str | Path, journal_mode: JournalMode | None = "WAL"
+    db_file_with_abs_path: str | Path, *, journal_mode: JournalMode | None = "WAL"
 ) -> Iterator[None]:
     """
-    Initializes or creates a database at the specified location, configures QCoDeS to use this as the
+    Initialises or creates a database at the specified location, configures QCoDeS to use this as the
     default database for the duration of the context, and restores the 'db_location' afterwards.
 
     Args:
@@ -288,7 +288,9 @@ def initialised_database_at(
     """
     db_location = qcodes.config["core"]["db_location"]
     try:
-        initialise_or_create_database_at(db_file_with_abs_path, journal_mode)
+        initialise_or_create_database_at(
+            db_file_with_abs_path, journal_mode=journal_mode
+        )
         yield
     finally:
         qcodes.config["core"]["db_location"] = db_location
