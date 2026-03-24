@@ -1,0 +1,7 @@
+``initialise_database``, ``initialise_or_create_database_at``, and ``initialised_database_at``
+now accept more consistent arguments:
+
+- ``initialise_database`` accepts a new ``db_path`` parameter to specify the database file
+  location directly, instead of always reading from the config.
+- ``initialised_database_at`` accepts a new ``journal_mode`` parameter, consistent with
+  ``initialise_database`` and ``initialise_or_create_database_at``.
