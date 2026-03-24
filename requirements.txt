@@ -137,7 +137,7 @@ jinja2==3.1.6
     #   nbsphinx
     #   sphinx
     #   towncrier
-jsonpointer==3.0.0
+jsonpointer==3.1.1
     # via sphinx-jsonschema
 jsonref==1.1.0
     # via zhinst-toolkit
@@ -317,7 +317,7 @@ pytest==9.0.2
     #   pytest-xdist
 pytest-asyncio==1.3.0
     # via qcodes (pyproject.toml)
-pytest-cov==7.0.0
+pytest-cov==7.1.0
     # via qcodes (pyproject.toml)
 pytest-mock==3.15.1
     # via qcodes (pyproject.toml)
@@ -454,13 +454,13 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
-types-jsonschema==4.26.0.20260202
+types-jsonschema==4.26.0.20260324
     # via qcodes (pyproject.toml)
-types-networkx==3.6.1.20260303
+types-networkx==3.6.1.20260321
     # via qcodes (pyproject.toml)
-types-pywin32==311.0.0.20260317
+types-pywin32==311.0.0.20260323
     # via qcodes (pyproject.toml)
-types-requests==2.32.4.20260107
+types-requests==2.32.4.20260324
     # via
     #   qcodes (pyproject.toml)
     #   types-tqdm
