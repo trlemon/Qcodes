@@ -227,7 +227,14 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
         meas_channel = config.measurement_channel
         nplc = self.instrument.nplc()
 
-        dX = (config.inner_stop - config.inner_start) / (config.inner_npts - 1)
+        if config.inner_npts < 1:
+            raise ValueError(
+                f"inner_npts must be at least 1 for fast sweep, got {config.inner_npts}"
+            )
+        if config.inner_npts == 1:
+            dX = 0.0
+        else:
+            dX = (config.inner_stop - config.inner_start) / (config.inner_npts - 1)
 
         match config.mode:
             case "IV":
