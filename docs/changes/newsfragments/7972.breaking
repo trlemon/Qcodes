@@ -1,0 +1,2 @@
+``qcodes.instrument.mockers.ami430.MockAMI430`` has been deprecated. This class is unused
+within QCoDeS and is not expected to be used externally.
