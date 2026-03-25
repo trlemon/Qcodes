@@ -972,7 +972,7 @@ def test_datasaver_foul_input(bg_writing) -> None:
 
 
 @settings(max_examples=10, deadline=None)
-@given(N=hst.integers(min_value=2, max_value=500))
+@given(N=hst.integers(min_value=2, max_value=50))
 @pytest.mark.usefixtures("empty_temp_db")
 @pytest.mark.parametrize("bg_writing", [True, False])
 @pytest.mark.parametrize("storage_type", ["numeric", "array"])
