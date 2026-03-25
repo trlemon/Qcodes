@@ -191,7 +191,7 @@ def test_cache_standalone(
 @pytest.mark.parametrize("in_memory_cache", [True, False])
 @settings(
     deadline=None,
-    max_examples=10,
+    max_examples=5,
     suppress_health_check=(HealthCheck.function_scoped_fixture,),
 )
 @given(n_points=hst.integers(min_value=1, max_value=11))

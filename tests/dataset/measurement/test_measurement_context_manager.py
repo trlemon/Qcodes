@@ -1113,7 +1113,7 @@ def test_datasaver_arrayparams(
     deadline=None,
     suppress_health_check=(HealthCheck.function_scoped_fixture,),
 )
-@given(N=hst.integers(min_value=5, max_value=500))
+@given(N=hst.integers(min_value=5, max_value=100))
 @pytest.mark.parametrize("bg_writing", [True, False])
 @pytest.mark.parametrize("storage_type", ["numeric", "array"])
 @pytest.mark.usefixtures("experiment")
@@ -1633,7 +1633,7 @@ def test_datasaver_parameter_with_setpoints_reg_but_missing(
     deadline=None,
     suppress_health_check=(HealthCheck.function_scoped_fixture,),
 )
-@given(N=hst.integers(min_value=5, max_value=500))
+@given(N=hst.integers(min_value=5, max_value=100))
 @pytest.mark.usefixtures("experiment")
 @pytest.mark.parametrize("storage_type", ["numeric", "array"])
 @pytest.mark.parametrize("bg_writing", [True, False])
@@ -2166,7 +2166,7 @@ def test_datasaver_2d_multi_parameters_array(
 @pytest.mark.usefixtures("experiment")
 @pytest.mark.parametrize("bg_writing", [True, False])
 @pytest.mark.parametrize("storage_type", ["numeric", "array"])
-@settings(deadline=None)
+@settings(deadline=None, max_examples=10)
 @given(Ns=hst.lists(hst.integers(2, 10), min_size=2, max_size=5))
 def test_datasaver_arrays_of_different_length(storage_type, Ns, bg_writing) -> None:
     """

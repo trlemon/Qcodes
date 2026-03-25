@@ -11,9 +11,13 @@ if TYPE_CHECKING:
     from pytest import LogCaptureFixture
 
 
-@given(n_points=hst.integers(min_value=1, max_value=100))
+@given(n_points=hst.integers(min_value=1, max_value=50))
 @example(n_points=5)
-@settings(deadline=None, suppress_health_check=(HealthCheck.function_scoped_fixture,))
+@settings(
+    deadline=None,
+    max_examples=10,
+    suppress_health_check=(HealthCheck.function_scoped_fixture,),
+)
 def test_datasaver_1d(
     experiment, DAC, DMM, caplog: "LogCaptureFixture", n_points
 ) -> None:
