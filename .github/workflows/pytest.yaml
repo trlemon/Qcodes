@@ -107,16 +107,24 @@ jobs:
       run: mypy -p qcodes
       if: ${{ !matrix.min-version && always() }}
       id: mypy
+    - name: Set pytest basetemp
+      if: ${{ runner.os == 'Windows' }}
+      run: echo "PYTEST_BASETEMP=--basetemp=D:\\tmp" >> $GITHUB_ENV
+      shell: bash
     - name: Run parallel tests
       if: ${{ always() }}
+      shell: bash
       run: |
-        pytest -m "not serial" --cov --cov-report xml --hypothesis-profile ci  --durations=20 $PYTEST_OPT tests
+        set -x
+        pytest -m "not serial" --cov --cov-report xml --hypothesis-profile ci  --durations=20 $PYTEST_OPT $PYTEST_BASETEMP tests
       id: parallel_tests
 # a subset of the tests fails when run in parallel on Windows so run those in serial here
     - name: Run serial tests
       if: ${{ always() }}
+      shell: bash
       run: |
-        pytest -m "serial" -n 0 --dist no --cov --cov-report xml --cov-append --hypothesis-profile ci $PYTEST_OPT tests
+        set -x
+        pytest -m "serial" -n 0 --dist no --cov --cov-report xml --cov-append --hypothesis-profile ci $PYTEST_OPT $PYTEST_BASETEMP tests
       id: serial_tests
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5.5.3
