@@ -123,17 +123,18 @@ def test_set_field_blocking(cryo_instrument):
 
 def test_wait_while_ramping_timeout(cryo_instrument: CryomagneticsModel4G) -> None:
     # Simulate _get_field always returning a value far from the setpoint.
-    # Mock time.time() to simulate 21s passing, avoiding real 20s wait
-    # for stability_check_interval timeout.
+    # Mock time.time() to simulate time passing without waiting
     call_count = 0
+    interval_fraction = 5
 
     def mock_time() -> float:
         nonlocal call_count
-        call_count += 1
         # First call sets last_check_time, subsequent calls exceed the
         # stability_check_interval
-        sleep_time = cryo_instrument.ramping_state_check_interval()
-        return call_count * sleep_time
+        sleep_time = cryo_instrument._stability_check_interval / interval_fraction
+        new_time = call_count * sleep_time
+        call_count += 1
+        return new_time
 
     with (
         patch.object(cryo_instrument, "_get_field", return_value=0.0),
