@@ -100,13 +100,6 @@ def test_get_voltage_minus_inf(
     assert voltage == -np.inf
 
 
-@pytest.mark.xfail(
-    run=False,
-    reason="If the test is run, it will pass "
-    "but all tests after this one will "
-    "fail. The problem is coming from "
-    "timetrace().",
-)
 @pytest.mark.parametrize("val_volt", ["10, 9.9e37, -9.9e37"])
 def test_get_timetrace(
     driver_with_read_and_fetch_mocked: Keysight34465A, val_volt: float
