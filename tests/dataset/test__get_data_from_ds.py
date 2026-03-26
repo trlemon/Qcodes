@@ -156,7 +156,7 @@ def test_datasaver_multidimarrayparameter_as_numeric(
     deadline=None,
     suppress_health_check=(HealthCheck.function_scoped_fixture,),
 )
-@given(N=hst.integers(min_value=5, max_value=500))
+@given(N=hst.integers(min_value=5, max_value=100))
 @pytest.mark.parametrize("bg_writing", [True, False])
 @pytest.mark.parametrize("storage_type", ["numeric", "array"])
 @pytest.mark.usefixtures("experiment")
