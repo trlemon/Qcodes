@@ -114,7 +114,7 @@ class VisaInstrument(Instrument):
             By default the IVI backend is used if found, but '@py' will use the
             ``pyvisa-py`` backend. Note that QCoDeS does not install (or even require)
             ANY backends, it is up to the user to do that. see eg:
-            http://pyvisa.readthedocs.org/en/stable/names.html
+            https://pyvisa.readthedocs.io/en/stable/introduction/names.html
         metadata: additional static metadata to add to this
             instrument's JSON snapshot.
         pyvisa_sim_file: Name of a pyvisa-sim yaml file used to simulate the instrument.
