@@ -72,8 +72,7 @@ class IPToVisa(VisaInstrument, IPInstrument):  # type: ignore[misc]
 
         traversable_handle = files("qcodes.instrument.sims") / pyvisa_sim_file
         with as_file(traversable_handle) as sim_visalib_path:
-            self.visalib = f"{sim_visalib_path!s}@sim"
-            self.set_address(address=address)
+            self.set_address(address=address, visalib=f"{sim_visalib_path!s}@sim")
 
         if device_clear:
             self.device_clear()

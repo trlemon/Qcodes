@@ -193,12 +193,12 @@ class VisaInstrument(Instrument):
 
         self._legacy_address = address
 
-        self.visabackend: str = visabackend
+        self._visabackend: str = visabackend
         self.visa_handle: pyvisa.resources.MessageBasedResource = visa_handle
         """
         The VISA resource used by this instrument.
         """
-        self.visalib: str | None = visalib
+        self._visalib: str | None = visalib
 
         if device_clear:
             self.device_clear()
@@ -233,6 +233,20 @@ class VisaInstrument(Instrument):
         The VISA resource manager used by this instrument.
         """
         return self.visa_handle.visalib.resource_manager
+
+    @property
+    def visabackend(self) -> str:
+        """
+        The VISA backend used by this instrument.
+        """
+        return self._visabackend
+
+    @property
+    def visalib(self) -> str | None:
+        """
+        The VISA library used by this instrument.
+        """
+        return self._visalib
 
     def _connect_and_handle_error(
         self, address: str, visalib: str | None
@@ -271,7 +285,7 @@ class VisaInstrument(Instrument):
 
         return resource, visabackend
 
-    def set_address(self, address: str) -> None:
+    def set_address(self, address: str, visalib: str | None = None) -> None:
         """
         Set the address for this instrument.
 
@@ -280,11 +294,13 @@ class VisaInstrument(Instrument):
                 should be the actual address and just that. If you wish to
                 change the backend for VISA, use the self.visalib attribute
                 (and then call this function).
+            visalib: Visa backend to use when connecting to this instrument.
 
         """
-        resource, visabackend = self._open_resource(address, self.visalib)
+        resource, visabackend = self._open_resource(address, visalib)
         self.visa_handle = resource
-        self.visabackend = visabackend
+        self._visabackend = visabackend
+        self._visalib = visalib
 
     def device_clear(self) -> None:
         """Clear the buffers of the device"""
