@@ -242,6 +242,10 @@ class VisaInstrument(Instrument):
         return self._visabackend
 
     @property
+    @deprecated(
+        "The visalib property is deprecated, use the visabackend property instead.",
+        category=QCoDeSDeprecationWarning,
+    )
     def visalib(self) -> str | None:
         """
         The VISA library used by this instrument.

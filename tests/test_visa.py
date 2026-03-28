@@ -13,6 +13,7 @@ from pytest import FixtureRequest
 from qcodes.instrument import Instrument, VisaInstrument
 from qcodes.instrument_drivers.AimTTi import AimTTiPL601
 from qcodes.instrument_drivers.american_magnetics import AMIModel430
+from qcodes.utils import QCoDeSDeprecationWarning
 from qcodes.validators import Numbers
 
 
@@ -250,8 +251,19 @@ def test_load_pyvisa_sim_file_implict_module(request: FixtureRequest) -> None:
     )
     request.addfinalizer(driver.close)
     assert driver.visabackend == "sim"
-    assert driver.visalib is not None
-    path_str, backend = driver.visalib.split("@")
+
+    assert Path(driver.visa_handle.visalib.library_path).match(
+        "qcodes/instrument/sims/AimTTi_PL601P.yaml"
+    )
+    assert driver.visa_handle.visalib.__class__.__name__ == "SimVisaLibrary"
+
+    # legacy
+    with pytest.warns(
+        QCoDeSDeprecationWarning, match="The visalib property is deprecated"
+    ):
+        visalib = driver.visalib  # pyright: ignore[reportDeprecated]
+    assert visalib is not None
+    path_str, backend = visalib.split("@")
     assert backend == "sim"
     path = Path(path_str)
     assert path.match("qcodes/instrument/sims/AimTTi_PL601P.yaml")
@@ -265,8 +277,17 @@ def test_load_pyvisa_sim_file_explicit_module(request: FixtureRequest) -> None:
     )
     request.addfinalizer(driver.close)
     assert driver.visabackend == "sim"
-    assert driver.visalib is not None
-    path_str, backend = driver.visalib.split("@")
+    assert Path(driver.visa_handle.visalib.library_path).match(
+        "qcodes/instrument/sims/AimTTi_PL601P.yaml"
+    )
+    assert driver.visa_handle.visalib.__class__.__name__ == "SimVisaLibrary"
+
+    with pytest.warns(
+        QCoDeSDeprecationWarning, match="The visalib property is deprecated"
+    ):
+        visalib = driver.visalib  # pyright: ignore[reportDeprecated]
+    assert visalib is not None
+    path_str, backend = visalib.split("@")
     assert backend == "sim"
     path = Path(path_str)
     assert path.match("qcodes/instrument/sims/AimTTi_PL601P.yaml")
