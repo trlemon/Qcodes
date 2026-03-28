@@ -12,10 +12,11 @@ import pyvisa
 import pyvisa.constants as vi_const
 import pyvisa.resources
 from pyvisa.errors import InvalidSession
+from typing_extensions import deprecated
 
 import qcodes.validators as vals
 from qcodes.logger import get_instrument_logger
-from qcodes.utils import DelayedKeyboardInterrupt
+from qcodes.utils import DelayedKeyboardInterrupt, QCoDeSDeprecationWarning
 
 from .instrument import Instrument
 from .instrument_base import InstrumentBase, InstrumentBaseKWArgs
@@ -185,25 +186,19 @@ class VisaInstrument(Instrument):
                 (
                     visa_handle,
                     visabackend,
-                    resource_manager,
                 ) = self._connect_and_handle_error(address, visalib)
         else:
-            visa_handle, visabackend, resource_manager = self._connect_and_handle_error(
-                address, visalib
-            )
+            visa_handle, visabackend = self._connect_and_handle_error(address, visalib)
         finalize(self, _close_visa_handle, visa_handle, str(self.name))
+
+        self._legacy_address = address
 
         self.visabackend: str = visabackend
         self.visa_handle: pyvisa.resources.MessageBasedResource = visa_handle
         """
         The VISA resource used by this instrument.
         """
-        self.resource_manager = resource_manager
-        """
-        The VISA resource manager used by this instrument.
-        """
         self.visalib: str | None = visalib
-        self._address = address
 
         if device_clear:
             self.device_clear()
@@ -211,22 +206,48 @@ class VisaInstrument(Instrument):
         self.set_terminator(terminator)
         self.timeout.set(timeout)
 
+    @property
+    @deprecated(
+        "The _address property is deprecated, use the address property instead.",
+        category=QCoDeSDeprecationWarning,
+    )
+    def _address(self) -> str | None:
+        """
+        DEPRECATED: USE self.address INSTEAD. TODO deprecate
+        """
+        return self._legacy_address
+
+    @property
+    def address(self) -> str | None:
+        """
+        The VISA resource name used to connect to this instrument.
+        Note that pyvisa normalizes the resource name when connecting,
+        so this may not be exactly the same as the address that was passed
+        in when creating the instrument.
+        """
+        return self.visa_handle.resource_name
+
+    @property
+    def resource_manager(self) -> pyvisa.ResourceManager | None:
+        """
+        The VISA resource manager used by this instrument.
+        """
+        return self.visa_handle.visalib.resource_manager
+
     def _connect_and_handle_error(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str, pyvisa.ResourceManager]:
+    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
         try:
-            visa_handle, visabackend, resource_manager = self._open_resource(
-                address, visalib
-            )
+            visa_handle, visabackend = self._open_resource(address, visalib)
         except Exception as e:
             self.visa_log.exception(f"Could not connect at {address}")
             self.close()
             raise e
-        return visa_handle, visabackend, resource_manager
+        return visa_handle, visabackend
 
     def _open_resource(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str, pyvisa.ResourceManager]:
+    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
         # in case we're changing the address - close the old handle first
         if getattr(self, "visa_handle", None):
             self.visa_handle.close()
@@ -248,7 +269,7 @@ class VisaInstrument(Instrument):
             resource.close()
             raise TypeError("QCoDeS only support MessageBasedResource Visa resources")
 
-        return resource, visabackend, resource_manager
+        return resource, visabackend
 
     def set_address(self, address: str) -> None:
         """
@@ -261,13 +282,9 @@ class VisaInstrument(Instrument):
                 (and then call this function).
 
         """
-        resource, visabackend, resource_manager = self._open_resource(
-            address, self.visalib
-        )
+        resource, visabackend = self._open_resource(address, self.visalib)
         self.visa_handle = resource
-        self._address = address
         self.visabackend = visabackend
-        self.resource_manager = resource_manager
 
     def device_clear(self) -> None:
         """Clear the buffers of the device"""
@@ -328,12 +345,17 @@ class VisaInstrument(Instrument):
         if getattr(self, "visa_handle", None):
             self.visa_handle.close()
 
-        if getattr(self, "visabackend", None) == "sim" and getattr(
-            self, "resource_manager", None
+        if (
+            getattr(self, "visabackend", None) == "sim"
+            and getattr(self, "resource_manager", None)
+            and self.resource_manager is not None
         ):
             # The pyvisa-sim visalib has a session attribute but the resource manager is not generic in the
             # visalib type so we cannot get it in a type safe way
-            known_sessions = getattr(self.resource_manager.visalib, "sessions", ())
+
+            known_sessions: tuple[int, ...] = getattr(
+                self.resource_manager.visalib, "sessions", ()
+            )
 
             try:
                 this_session = self.resource_manager.session
@@ -425,7 +447,7 @@ class VisaInstrument(Instrument):
             update=update, params_to_skip_update=params_to_skip_update
         )
 
-        snap["address"] = self._address
+        snap["address"] = self.address
         snap["terminator"] = self.visa_handle.read_termination
         snap["read_terminator"] = self.visa_handle.read_termination
         snap["write_terminator"] = self.visa_handle.write_termination

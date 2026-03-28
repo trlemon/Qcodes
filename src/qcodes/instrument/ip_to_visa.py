@@ -88,8 +88,10 @@ class IPToVisa(VisaInstrument, IPInstrument):  # type: ignore[misc]
         if getattr(self, "visa_handle", None):
             self.visa_handle.close()
 
-        if getattr(self, "visabackend", None) == "sim" and getattr(
-            self, "resource_manager", None
+        if (
+            getattr(self, "visabackend", None) == "sim"
+            and getattr(self, "resource_manager", None)
+            and self.resource_manager is not None
         ):
             # The pyvisa-sim visalib has a session attribute but the resource manager is not generic in the
             # visalib type so we cannot get it in a type safe way

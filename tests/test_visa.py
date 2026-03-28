@@ -29,10 +29,10 @@ class MockVisa(VisaInstrument):
 
     def _open_resource(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str, pyvisa.ResourceManager]:
+    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
         if visalib is None:
             visalib = "MockVisaLib"
-        return MockVisaHandle(), visalib, pyvisa.ResourceManager("@sim")
+        return MockVisaHandle(), visalib
 
 
 class MockVisaHandle(pyvisa.resources.MessageBasedResource):
@@ -132,6 +132,7 @@ def test_visa_gc_closes_connection(caplog) -> None:
             terminator="\n",
         )
         assert list(Instrument._all_instruments.keys()) == ["x"]
+        assert x.resource_manager is not None
         assert len(x.resource_manager.list_opened_resources()) == 1
         assert x.resource_manager.list_opened_resources() == [x.visa_handle]
         return x.resource_manager
