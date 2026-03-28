@@ -1,0 +1,11 @@
+A new ``resource`` parameter has been added that accepts an already-opened
+``pyvisa.resources.MessageBasedResource``, allowing a ``VisaInstrument`` to be
+constructed from an existing PyVISA resource handle. The ``resource`` parameter
+cannot be combined with ``address``, ``visalib`` or ``pyvisa_sim_file``. These arguments
+are only used to construct a new resource.
+
+The ``resource_manager``, ``visabackend`` and ``visalib`` attributes of
+:class:`.VisaInstrument` have been converted to read-only properties.
+
+The ``_address`` property is deprecated in favour of ``address``.
+The ``visalib`` property is deprecated in favour of ``visabackend``.
