@@ -887,10 +887,7 @@ class KeysightInfiniium(VisaInstrument):
 
         # Check if we are using pyvisa-py as our visa lib and warn users that
         # this may cause long digitize operations to fail
-        if (
-            self.visa_handle.visalib.library_path == "py"
-            and not silence_pyvisapy_warning
-        ):
+        if self.visabackend == "py" and not silence_pyvisapy_warning:
             self.log.warning(
                 "Timeout not handled correctly in pyvisa_py. This may cause"
                 " long acquisitions to fail. Either use ni/keysight visalib"
