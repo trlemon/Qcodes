@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import warnings
 from importlib.resources import as_file, files
-from typing import TYPE_CHECKING, Any, Literal, Self, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, Self, TypedDict, overload
 from weakref import finalize
 
 import pyvisa
@@ -94,6 +94,12 @@ class VisaInstrument(Instrument):
     Args:
         name: What this instrument is called locally.
         address: The visa resource name to use to connect.
+            Mutually exclusive with ``resource``.
+        resource: An already-opened :class:`pyvisa.resources.MessageBasedResource`.
+            When provided, the instrument wraps this resource instead of opening
+            a new connection. The instrument takes ownership and will close the
+            resource when the instrument is closed or garbage collected.
+            Mutually exclusive with ``address``, ``visalib`` and ``pyvisa_sim_file``.
         timeout: seconds to allow for responses.  If "unset" will read the value from
            `self.default_timeout`. None means wait forever. Default 5.
         terminator: Read and write termination character(s).
@@ -136,16 +142,42 @@ class VisaInstrument(Instrument):
     None means no timeout e.g. wait forever.
     """
 
+    @overload
     def __init__(
         self,
         name: str,
         address: str,
+        timeout: float | None | Literal["Unset"] = ...,
+        terminator: str | Literal["Unset"] | None = ...,  # noqa: PYI051
+        device_clear: bool = ...,
+        visalib: str | None = ...,
+        pyvisa_sim_file: str | None = ...,
+        **kwargs: Unpack[InstrumentBaseKWArgs],
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        name: str,
+        *,
+        resource: pyvisa.resources.MessageBasedResource,
+        timeout: float | None | Literal["Unset"] = ...,
+        terminator: str | Literal["Unset"] | None = ...,  # noqa: PYI051
+        device_clear: bool = ...,
+        **kwargs: Unpack[InstrumentBaseKWArgs],
+    ) -> None: ...
+
+    def __init__(
+        self,
+        name: str,
+        address: str | None = None,
         timeout: float | None | Literal["Unset"] = "Unset",
         terminator: str | Literal["Unset"] | None = "Unset",  # noqa: PYI051
         # while unset is redundant here we add it to communicate to the user that unset has special meaning
         device_clear: bool = True,
         visalib: str | None = None,
         pyvisa_sim_file: str | None = None,
+        resource: pyvisa.resources.MessageBasedResource | None = None,
         **kwargs: Unpack[InstrumentBaseKWArgs],
     ):
         if terminator == "Unset":
@@ -164,12 +196,24 @@ class VisaInstrument(Instrument):
             vals=vals.MultiType(vals.Numbers(min_value=0), vals.Enum(None)),
         )
 
-        if visalib is not None and pyvisa_sim_file is not None:
+        if resource is not None:
+            if address is not None:
+                raise TypeError("'address' and 'resource' are mutually exclusive")
+            if visalib is not None or pyvisa_sim_file is not None:
+                raise TypeError(
+                    "Cannot supply visalib or pyvisa_sim_file when using "
+                    "an existing resource"
+                )
+            visa_handle = resource
+            address = resource.resource_name
+        elif address is None:
+            raise TypeError("Either 'address' or 'resource' must be provided")
+        elif visalib is not None and pyvisa_sim_file is not None:
             raise RuntimeError(
                 "It's an error to supply both visalib and pyvisa_sim_file as "
                 "arguments to a VISA instrument"
             )
-        if pyvisa_sim_file is not None:
+        elif pyvisa_sim_file is not None:
             if ":" in pyvisa_sim_file:
                 module, pyvisa_sim_file = pyvisa_sim_file.split(":")
             else:
