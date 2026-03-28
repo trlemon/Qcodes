@@ -252,7 +252,7 @@ class VisaInstrument(Instrument):
     )
     def _address(self) -> str | None:
         """
-        DEPRECATED: USE self.address INSTEAD. TODO deprecate
+        DEPRECATED: USE self.address INSTEAD.
         """
         return self._legacy_address
 
