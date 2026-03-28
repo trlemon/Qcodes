@@ -52,6 +52,8 @@ class MockVisaHandle(pyvisa.resources.MessageBasedResource):
     - a state > 10 throws an error
     """
 
+    resource_name: str = "MOCK::INSTR"  # pyright: ignore[reportIncompatibleVariableOverride]
+
     def __init__(self):
         self.state = 0
         self.closed = False
@@ -325,3 +327,52 @@ def test_load_pyvisa_sim_file_invalid_module_raises(request: FixtureRequest) -> 
             address="GPIB::1::INSTR",
             pyvisa_sim_file="qcodes.instrument.not_a_module:AimTTi_PL601P.yaml",
         )
+
+
+def test_existing_resource(request: FixtureRequest) -> None:
+    handle = MockVisaHandle()
+    mv = MockVisa("from_resource", resource=handle)
+    request.addfinalizer(mv.close)
+    assert mv.visa_handle is handle
+    assert mv.address == "MOCK::INSTR"
+    mv.state.set(5)
+    assert mv.state.get() == 5
+
+
+def test_existing_resource_with_address_raises() -> None:
+    handle = MockVisaHandle()
+    with pytest.raises(
+        TypeError,
+        match=re.escape("'address' and 'resource' are mutually exclusive"),
+    ):
+        MockVisa("bad", address="some_address", resource=handle)
+
+
+def test_existing_resource_with_visalib_raises() -> None:
+    handle = MockVisaHandle()
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Cannot supply visalib or pyvisa_sim_file when using an existing resource"
+        ),
+    ):
+        MockVisa("bad", resource=handle, visalib="@py")
+
+
+def test_existing_resource_with_pyvisa_sim_file_raises() -> None:
+    handle = MockVisaHandle()
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Cannot supply visalib or pyvisa_sim_file when using an existing resource"
+        ),
+    ):
+        MockVisa("bad", resource=handle, pyvisa_sim_file="somefile.yaml")
+
+
+def test_no_address_or_resource_raises() -> None:
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Either 'address' or 'resource' must be provided"),
+    ):
+        MockVisa("bad")
