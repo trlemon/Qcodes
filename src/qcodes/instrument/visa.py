@@ -183,22 +183,17 @@ class VisaInstrument(Instrument):
                         f"file {pyvisa_sim_file} from module: {module}"
                     )
                 visalib = f"{sim_visalib_path!s}@sim"
-                (
-                    visa_handle,
-                    visabackend,
-                ) = self._connect_and_handle_error(address, visalib)
+                visa_handle = self._connect_and_handle_error(address, visalib)
         else:
-            visa_handle, visabackend = self._connect_and_handle_error(address, visalib)
+            visa_handle = self._connect_and_handle_error(address, visalib)
         finalize(self, _close_visa_handle, visa_handle, str(self.name))
 
         self._legacy_address = address
 
-        self._visabackend: str = visabackend
         self.visa_handle: pyvisa.resources.MessageBasedResource = visa_handle
         """
         The VISA resource used by this instrument.
         """
-        self._visalib: str | None = visalib
 
         if device_clear:
             self.device_clear()
@@ -239,7 +234,19 @@ class VisaInstrument(Instrument):
         """
         The VISA backend used by this instrument.
         """
-        return self._visabackend
+        class_name = self.visa_handle.visalib.__class__.__name__
+        self.visa_log.info(
+            f"Determining VISA backend from visa library class name: {class_name}"
+        )
+        if class_name == "SimVisaLibrary":
+            return "sim"
+        elif self.visa_handle.visalib.library_path == "py":
+            return "py"
+        else:
+            self.visa_log.info(
+                f"Could not determine VISA backend from visa library class name: {class_name} falling back to IVI default."
+            )
+            return "ivi"
 
     @property
     @deprecated(
@@ -250,22 +257,22 @@ class VisaInstrument(Instrument):
         """
         The VISA library used by this instrument.
         """
-        return self._visalib
+        return f"{self.visa_handle.visalib.library_path}@{self.visabackend}"
 
     def _connect_and_handle_error(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
+    ) -> pyvisa.resources.MessageBasedResource:
         try:
-            visa_handle, visabackend = self._open_resource(address, visalib)
+            visa_handle = self._open_resource(address, visalib)
         except Exception as e:
             self.visa_log.exception(f"Could not connect at {address}")
             self.close()
             raise e
-        return visa_handle, visabackend
+        return visa_handle
 
     def _open_resource(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
+    ) -> pyvisa.resources.MessageBasedResource:
         # in case we're changing the address - close the old handle first
         if getattr(self, "visa_handle", None):
             self.visa_handle.close()
@@ -275,11 +282,9 @@ class VisaInstrument(Instrument):
                 f"Opening PyVISA Resource Manager with visalib: {visalib}"
             )
             resource_manager = pyvisa.ResourceManager(visalib)
-            visabackend = visalib.split("@")[1]
         else:
             self.visa_log.info("Opening PyVISA Resource Manager with default backend.")
             resource_manager = pyvisa.ResourceManager()
-            visabackend = "ivi"
 
         self.visa_log.info(f"Opening PyVISA resource at address: {address}")
         resource = resource_manager.open_resource(address)
@@ -287,7 +292,7 @@ class VisaInstrument(Instrument):
             resource.close()
             raise TypeError("QCoDeS only support MessageBasedResource Visa resources")
 
-        return resource, visabackend
+        return resource
 
     def set_address(self, address: str, visalib: str | None = None) -> None:
         """
@@ -301,10 +306,8 @@ class VisaInstrument(Instrument):
             visalib: Visa backend to use when connecting to this instrument.
 
         """
-        resource, visabackend = self._open_resource(address, visalib)
+        resource = self._open_resource(address, visalib)
         self.visa_handle = resource
-        self._visabackend = visabackend
-        self._visalib = visalib
 
     def device_clear(self) -> None:
         """Clear the buffers of the device"""

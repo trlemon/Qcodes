@@ -30,10 +30,14 @@ class MockVisa(VisaInstrument):
 
     def _open_resource(
         self, address: str, visalib: str | None
-    ) -> tuple[pyvisa.resources.MessageBasedResource, str]:
+    ) -> pyvisa.resources.MessageBasedResource:
         if visalib is None:
             visalib = "MockVisaLib"
-        return MockVisaHandle(), visalib
+        return MockVisaHandle()
+
+    @property
+    def visabackend(self) -> str:
+        return "sim"
 
 
 class MockVisaHandle(pyvisa.resources.MessageBasedResource):
@@ -193,6 +197,10 @@ def test_visa_backend(mocker, request: FixtureRequest) -> None:
 
     class MockBackendVisaInstrument(VisaInstrument):
         visa_handle = MockVisaHandle()
+
+        @property
+        def visabackend(self) -> str:
+            return "sim"
 
     class MockRM:
         def open_resource(self, address):
