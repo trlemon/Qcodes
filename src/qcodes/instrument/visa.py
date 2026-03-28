@@ -85,6 +85,14 @@ class VisaInstrumentKWArgs(TypedDict):
     """
     Name of a pyvisa-sim yaml file used to simulate the instrument.
     """
+    resource: NotRequired[pyvisa.resources.MessageBasedResource | None]
+    """
+    An already-opened :class:`pyvisa.resources.MessageBasedResource`.
+    When provided, the instrument wraps this resource instead of opening
+    a new connection. The instrument takes ownership and will close the
+    resource when the instrument is closed or garbage collected.
+    Mutually exclusive with ``address``, ``visalib`` and ``pyvisa_sim_file``.
+    """
 
 
 class VisaInstrument(Instrument):
