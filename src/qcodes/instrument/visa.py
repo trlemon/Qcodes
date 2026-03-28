@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import warnings
 from importlib.resources import as_file, files
-from typing import TYPE_CHECKING, Any, Literal, Self, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, TypedDict
 from weakref import finalize
 
 import pyvisa
@@ -141,31 +141,6 @@ class VisaInstrument(Instrument):
     The default timeout in seconds if the timeout is not specified when creating the instrument.
     None means no timeout e.g. wait forever.
     """
-
-    @overload
-    def __init__(
-        self,
-        name: str,
-        address: str,
-        timeout: float | None | Literal["Unset"] = ...,
-        terminator: str | Literal["Unset"] | None = ...,  # noqa: PYI051
-        device_clear: bool = ...,
-        visalib: str | None = ...,
-        pyvisa_sim_file: str | None = ...,
-        **kwargs: Unpack[InstrumentBaseKWArgs],
-    ) -> None: ...
-
-    @overload
-    def __init__(
-        self,
-        name: str,
-        *,
-        resource: pyvisa.resources.MessageBasedResource,
-        timeout: float | None | Literal["Unset"] = ...,
-        terminator: str | Literal["Unset"] | None = ...,  # noqa: PYI051
-        device_clear: bool = ...,
-        **kwargs: Unpack[InstrumentBaseKWArgs],
-    ) -> None: ...
 
     def __init__(
         self,
