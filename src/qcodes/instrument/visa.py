@@ -266,12 +266,11 @@ class VisaInstrument(Instrument):
         The VISA backend used by this instrument.
         """
         class_name = self.visa_handle.visalib.__class__.__name__
-        self.visa_log.info(
-            f"Determining VISA backend from visa library class name: {class_name}"
-        )
         if class_name == "SimVisaLibrary":
             return "sim"
-        elif self.visa_handle.visalib.library_path == "py":
+        elif class_name == "IVIVisaLibrary":
+            return "ivi"
+        elif class_name == "PyVisaLibrary":
             return "py"
         else:
             self.visa_log.info(
