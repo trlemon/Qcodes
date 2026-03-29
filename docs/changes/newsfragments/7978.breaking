@@ -9,3 +9,6 @@ The ``resource_manager``, ``visabackend`` and ``visalib`` attributes of
 
 The ``_address`` property is deprecated in favour of ``address``.
 The ``visalib`` property is deprecated in favour of ``visabackend``.
+
+The method ``set_address`` now takes visalib as an argument. If this
+is not supplied the default visa library will be used.
