@@ -4,7 +4,7 @@ constructed from an existing PyVISA resource handle. The ``resource`` parameter
 cannot be combined with ``address``, ``visalib`` or ``pyvisa_sim_file``. These arguments
 are only used to construct a new resource.
 
-The ``resource_manager``, ``visabackend`` and ``visalib`` attributes of
+The ``resource_manager``, ``visabackend`` and ``visalib`` ``visa_handle`` attributes of
 :class:`.VisaInstrument` have been converted to read-only properties.
 
 The ``_address`` property is deprecated in favour of ``address``.

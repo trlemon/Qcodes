@@ -198,7 +198,7 @@ def test_visa_backend(mocker, request: FixtureRequest) -> None:
     address_opened = [None]
 
     class MockBackendVisaInstrument(VisaInstrument):
-        visa_handle = MockVisaHandle()
+        _visa_handle = MockVisaHandle()
 
         @property
         def visabackend(self) -> str:

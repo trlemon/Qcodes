@@ -217,10 +217,7 @@ class VisaInstrument(Instrument):
 
         self._legacy_address = address
 
-        self.visa_handle: pyvisa.resources.MessageBasedResource = visa_handle
-        """
-        The VISA resource used by this instrument.
-        """
+        self._visa_handle: pyvisa.resources.MessageBasedResource = visa_handle
 
         if device_clear:
             self.device_clear()
@@ -255,6 +252,13 @@ class VisaInstrument(Instrument):
         The VISA resource manager used by this instrument.
         """
         return self.visa_handle.visalib.resource_manager
+
+    @property
+    def visa_handle(self) -> pyvisa.resources.MessageBasedResource:
+        """
+        The VISA resource used by this instrument.
+        """
+        return self._visa_handle
 
     @property
     def visabackend(self) -> str:
@@ -321,20 +325,26 @@ class VisaInstrument(Instrument):
 
         return resource
 
-    def set_address(self, address: str, visalib: str | None = None) -> None:
+    def set_address(
+        self,
+        address: str,
+        visalib: str | None,
+    ) -> None:
         """
-        Set the address for this instrument.
+        Set the address for this instrument. Note in most cases
+        this method is not recommended and it is better to close the instrument and
+        create a new instance of the instrument with the new address.
 
         Args:
             address: The visa resource name to use to connect. The address
                 should be the actual address and just that. If you wish to
-                change the backend for VISA, use the self.visalib attribute
-                (and then call this function).
+                change the backend for VISA, use the visalib argument
             visalib: Visa backend to use when connecting to this instrument.
+                If not supplied use the default backend.
 
         """
-        resource = self._open_resource(address, visalib)
-        self.visa_handle = resource
+        self._visa_handle = self._open_resource(address, visalib)
+        self._legacy_address = address
 
     def device_clear(self) -> None:
         """Clear the buffers of the device"""
