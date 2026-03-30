@@ -762,7 +762,7 @@ class QDevQDac(VisaInstrument):
         """
         self.visa_handle.write("status")
 
-        log.info(f"Connected to QDac on {self._address}, {self.visa_handle.read()}")
+        log.info(f"Connected to QDac on {self.address}, {self.visa_handle.read()}")
 
         # take care of the rest of the output
         for _ in range(self._output_n_lines):

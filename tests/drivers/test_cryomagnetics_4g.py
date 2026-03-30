@@ -32,8 +32,10 @@ def fixture_cryo_instrument() -> "Generator[CryomagneticsModel4G,None,None]":
 
 def test_initialization(cryo_instrument: CryomagneticsModel4G) -> None:
     assert cryo_instrument.name == "test_cryo_4g"
-    assert cryo_instrument._address == "GPIB::1::INSTR"
-    # assert cryo_instrument.terminator == "\n"
+    assert cryo_instrument.address == "GPIB0::1::INSTR"
+    # the address is normalized by pyvisa meaning that in this case an extra 0 is added after GPIB.
+    assert cryo_instrument.visa_handle.write_termination == "\n"
+    assert cryo_instrument.visa_handle.read_termination == "\n"
 
 
 def test_get_field(cryo_instrument: CryomagneticsModel4G) -> None:
@@ -45,7 +47,8 @@ def test_get_field(cryo_instrument: CryomagneticsModel4G) -> None:
 def test_initialization_visa_sim(cryo_instrument: CryomagneticsModel4G) -> None:
     # Test to ensure correct initialization of the CryomagneticsModel4G instrument
     assert cryo_instrument.name == "test_cryo_4g"
-    assert cryo_instrument._address == "GPIB::1::INSTR"
+    assert cryo_instrument.address == "GPIB0::1::INSTR"
+    # the address is normalized by pyvisa meaning that in this case an extra 0 is added after GPIB.
 
 
 @pytest.mark.parametrize(

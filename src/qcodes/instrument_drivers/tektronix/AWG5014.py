@@ -175,7 +175,6 @@ class TektronixAWG5014(VisaInstrument):
         """
         super().__init__(name, address, **kwargs)
 
-        self._address = address
         self.num_channels = num_channels
 
         self._values: dict[str, dict[str, dict[str, npt.NDArray | float | None]]] = {}
