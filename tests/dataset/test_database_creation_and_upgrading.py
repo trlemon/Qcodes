@@ -920,9 +920,10 @@ def test_perform_actual_upgrade_6_to_newest_add_new_data() -> None:
         # Make a number of identical runs
         for _ in range(10):
             with meas.run() as datasaver:
-                for x in np.random.rand(10):
-                    for y in np.random.rand(10):
-                        z = np.random.rand()
+                rng = np.random.default_rng()
+                for x in rng.random(10):
+                    for y in rng.random(10):
+                        z = rng.random()
                         datasaver.add_result(
                             (params[0], 0),
                             (params[1], 1),
