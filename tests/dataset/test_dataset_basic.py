@@ -491,8 +491,9 @@ def test_add_data_array() -> None:
 
     expected_x = np.arange(100)
     expected_y = []
+    rng = np.random.default_rng()
     for x in range(100):
-        y = np.random.default_rng().random(10)
+        y = rng.random(10)
         expected_y.append(y)
         mydataset.add_results([{"x": x, "y": y}])
 

@@ -100,7 +100,7 @@ class MockParabola(DummyBase):
             self.x.get() ** 2
             + self.y.get() ** 2
             + self.z.get() ** 2
-            + self.noise.get() * self._rng.random(1)
+            + self.noise.get() * self._rng.random()
         )
 
     def _measure_skewed_parabola(self) -> float:
@@ -109,7 +109,7 @@ class MockParabola(DummyBase):
         """
         return (self.x.get() ** 2 + self.y.get() ** 2 + self.z.get() ** 2) * (
             1 + abs(self.y.get() - self.x.get())
-        ) + self.noise.get() * self._rng.random(1)
+        ) + self.noise.get() * self._rng.random()
 
 
 class MockMetaParabola(InstrumentBase):
