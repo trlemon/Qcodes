@@ -17,8 +17,9 @@ try:
 except ImportError:
     raise ImportError(
         """Module clr not found. Please obtain it by
-                         running 'pip install pythonnet'
-                         in a qcodes environment terminal"""
+                         installing QCoDeS with the
+                         minicircuits_usb_spdt extra, e.g. by running
+                         pip install qcodes[minicircuits_usb_spdt]"""
     )
 
 
