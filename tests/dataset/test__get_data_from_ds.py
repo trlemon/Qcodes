@@ -258,7 +258,7 @@ def test_datasaver_multidim_array(experiment, bg_writing) -> None:
     meas.register_parameter(x2, paramtype="array")
     meas.register_parameter(y1, setpoints=[x1, x2], paramtype="array")
     meas.register_parameter(y2, setpoints=[x1, x2], paramtype="array")
-    data = np.random.rand(4, size1, size2)
+    data = np.random.default_rng().random((4, size1, size2))
     expected = {
         "x1": data[0, :, :],
         "x2": data[1, :, :],
@@ -304,7 +304,7 @@ def test_datasaver_multidim_numeric(experiment, bg_writing) -> None:
     meas.register_parameter(x2, paramtype="numeric")
     meas.register_parameter(y1, setpoints=[x1, x2], paramtype="numeric")
     meas.register_parameter(y2, setpoints=[x1, x2], paramtype="numeric")
-    data = np.random.rand(4, size1, size2)
+    data = np.random.default_rng().random((4, size1, size2))
     with meas.run(write_in_background=bg_writing) as datasaver:
         datasaver.add_result(
             (str(x1), data[0, :, :]),

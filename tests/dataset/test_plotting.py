@@ -47,7 +47,7 @@ class TerminateLoopException(Exception):
     param_label="Larger than the highest scale",
     scale=max(list(_ENGINEERING_PREFIXES.keys())),
     unit="V",
-    data_strategy=np.random.random((5,))
+    data_strategy=np.random.default_rng().random((5,))
     * 10 ** (3 + max(list(_ENGINEERING_PREFIXES.keys()))),
 )
 @example(
@@ -55,7 +55,7 @@ class TerminateLoopException(Exception):
     param_label="Lower than the lowest scale",
     scale=min(list(_ENGINEERING_PREFIXES.keys())),
     unit="V",
-    data_strategy=np.random.random((5,))
+    data_strategy=np.random.default_rng().random((5,))
     * 10 ** (-3 + min(list(_ENGINEERING_PREFIXES.keys()))),
 )
 @settings(suppress_health_check=[HealthCheck.too_slow])
@@ -132,8 +132,8 @@ def test_plot_by_id_line_and_heatmap(experiment, request: FixtureRequest) -> Non
     inst = DummyInstrument("dummy", gates=["s1", "m1", "s2", "m2"])
     request.addfinalizer(inst.close)
 
-    inst.m1.get = np.random.randn
-    inst.m2.get = lambda: np.random.randint(0, 5)
+    inst.m1.get = np.random.default_rng().standard_normal
+    inst.m2.get = lambda: np.random.default_rng().integers(0, 5)
 
     meas = Measurement()
     meas.register_parameter(inst.s1)

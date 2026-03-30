@@ -22,7 +22,7 @@ def dataset_with_outliers_generator(
         if background_noise and (
             counter < round(npoints / 2.3) or counter > round(npoints / 1.8)
         ):
-            data = np.random.rand(npoints) - data_offset
+            data = np.random.default_rng().random(npoints) - data_offset
         else:
             data = xv * np.linspace(0, 1, npoints)
         if counter == round(npoints / 1.9):
