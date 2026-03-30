@@ -34,7 +34,8 @@ def test_initialization(cryo_instrument: CryomagneticsModel4G) -> None:
     assert cryo_instrument.name == "test_cryo_4g"
     assert cryo_instrument.address == "GPIB0::1::INSTR"
     # the address is normalized by pyvisa meaning that in this case an extra 0 is added after GPIB.
-    # assert cryo_instrument.terminator == "\n"
+    assert cryo_instrument.visa_handle.write_termination == "\n"
+    assert cryo_instrument.visa_handle.read_termination == "\n"
 
 
 def test_get_field(cryo_instrument: CryomagneticsModel4G) -> None:
