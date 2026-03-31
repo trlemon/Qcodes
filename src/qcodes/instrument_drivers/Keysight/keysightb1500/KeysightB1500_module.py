@@ -378,7 +378,7 @@ class KeysightB1500Module(InstrumentChannel["KeysightB1500"]):
 
 class StatusMixin:
     def __init__(self) -> None:
-        self.names = tuple(["param1", "param2"])
+        self.names: tuple[str, ...] = ("param1", "param2")
 
     def status_summary(self) -> dict[str, str]:
         return_dict: dict[str, str] = {}
