@@ -28,6 +28,7 @@ from qcodes.parameters import (
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
+    from typing import assert_never
 
     from typing_extensions import Unpack
 
@@ -243,6 +244,13 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
                 meas, source, func, sense_mode = "v", "i", "0", "0"
             case "VIfourprobe":
                 meas, source, func, sense_mode = "v", "i", "0", "1"
+            case _:
+                if TYPE_CHECKING:
+                    assert_never()
+                raise ValueError(
+                    f"Unsupported fast sweep mode {config.mode!r}. "
+                    "Expected one of 'IV', 'VI', 'VIfourprobe'."
+                )
 
         script = [
             # Configure measurement channel
@@ -305,6 +313,13 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
             case "VIfourprobe":
                 meas, source, func, sense_mode = "v", "i", "0", "1"
                 outer_source, outer_func = "i", "0"
+            case _:
+                if TYPE_CHECKING:
+                    assert_never()
+                raise ValueError(
+                    f"Unsupported fast sweep mode {config.mode!r}. "
+                    "Expected one of 'IV', 'VI', 'VIfourprobe'."
+                )
 
         script = [
             # Configure measurement channel
