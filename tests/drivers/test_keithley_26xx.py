@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import cast
+from typing import TYPE_CHECKING, cast
 from unittest.mock import patch
 
 import numpy as np
@@ -7,10 +7,12 @@ import pytest
 
 from qcodes.dataset import LinSweep
 from qcodes.instrument_drivers.Keithley import (
-    Keithley2600Channel,
     Keithley2600MeasurementStatus,
     Keithley2614B,
 )
+
+if TYPE_CHECKING:
+    from qcodes.instrument_drivers.Keithley import Keithley2600Channel
 
 
 @pytest.fixture(scope="function", name="driver")
