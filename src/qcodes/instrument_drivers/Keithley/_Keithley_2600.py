@@ -296,12 +296,34 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
         meas_channel = config.measurement_channel
         nplc = self.instrument.nplc()
 
+        assert config.inner_start is not None
+        assert config.inner_stop is not None
+        assert config.inner_npts is not None
         assert config.outer_start is not None
         assert config.outer_stop is not None
         assert config.outer_npts is not None
 
-        dX_inner = (config.inner_stop - config.inner_start) / (config.inner_npts - 1)
-        dX_outer = (config.outer_stop - config.outer_start) / (config.outer_npts - 1)
+        inner_npts = config.inner_npts
+        outer_npts = config.outer_npts
+
+        if inner_npts < 1:
+            raise ValueError("inner_npts must be at least 1 for 2D fast sweep.")
+        if outer_npts < 1:
+            raise ValueError("outer_npts must be at least 1 for 2D fast sweep.")
+
+        if inner_npts == 1:
+            dX_inner = 0.0
+        else:
+            dX_inner = (config.inner_stop - config.inner_start) / (
+                config.inner_npts - 1
+            )
+
+        if outer_npts == 1:
+            dX_outer = 0.0
+        else:
+            dX_outer = (config.outer_stop - config.outer_start) / (
+                config.outer_npts - 1
+            )
 
         match config.mode:
             case "IV":
