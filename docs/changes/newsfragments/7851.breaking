@@ -1,0 +1,4 @@
+Refactored ``Keithley2600`` driver parameter ``fastsweep`` to be a
+``ParameterWithSetpoints`` instead of relying on deprecated ``qcodes_loop`` code.
+Contains breaking change since method ``doFastSweep`` has been replaced with
+``setup_fastsweep(...)`` helper.

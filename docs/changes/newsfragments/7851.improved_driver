@@ -1,3 +1,0 @@
-Refactored ``Keithley2600`` driver to use `ParameterWithSetpoints` instead
-of relying on deprecated `qcodes_loop` code. Contains breaking change since
-method `doFastSweep` has been replaced with `fastsweep`.
