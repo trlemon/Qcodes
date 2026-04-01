@@ -13,7 +13,6 @@ import numpy.typing as npt
 import qcodes.validators as vals
 from qcodes.extensions.infer import infer_channel
 from qcodes.instrument import (
-    Instrument,
     InstrumentChannel,
     VisaInstrument,
     VisaInstrumentKWArgs,
@@ -412,7 +411,7 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
             return self.instrument._execute_lua(script, config.total_points)
 
 
-class TimeTrace(ParameterWithSetpoints):
+class TimeTrace(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel"]):
     """
     A parameter class that holds the data corresponding to the time dependence of
     current and voltage.
@@ -503,7 +502,7 @@ class TimeTrace(ParameterWithSetpoints):
         return data
 
 
-class TimeAxis(Parameter):
+class TimeAxis(Parameter[npt.NDArray, "Keithley2600Channel"]):
     """
     A simple :class:`.Parameter` that holds all the times (relative to the
     measurement start) at which the points of the time trace were acquired.
@@ -640,13 +639,13 @@ class _MeasurementVoltageParameter(_ParameterWithStatus):
         return value
 
 
-class Keithley2600Channel(InstrumentChannel):
+class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
     """
     Class to hold the two Keithley channels, i.e.
     SMUA and SMUB.
     """
 
-    def __init__(self, parent: Instrument, name: str, channel: str) -> None:
+    def __init__(self, parent: Keithley2600, name: str, channel: str) -> None:
         """
         Args:
             parent: The Instrument instance to which the channel is
@@ -665,8 +664,8 @@ class Keithley2600Channel(InstrumentChannel):
         self._extra_visa_timeout = 5000
         self._measurement_duration_factor = 2  # Ensures that we are always above
         # the expected time.
-        vranges = self._parent._vranges
-        iranges = self._parent._iranges
+        vranges = self.parent._vranges
+        iranges = self.parent._iranges
         vlimit_minmax = self.parent._vlimit_minmax
         ilimit_minmax = self.parent._ilimit_minmax
 
@@ -1165,7 +1164,7 @@ class Keithley2600Channel(InstrumentChannel):
             estimated_measurement_duration + _time_trace_extra_visa_timeout
         )
 
-        self.write(self.root_instrument._scriptwrapper(program=_script, debug=True))
+        self.write(self.parent._scriptwrapper(program=_script, debug=True))
 
         # now poll all the data
         # The problem is that a '\n' character might by chance be present in
@@ -1174,9 +1173,9 @@ class Keithley2600Channel(InstrumentChannel):
         received = 0
         data = b""
         # we must wait for the script to execute
-        with self.root_instrument.timeout.set_to(new_visa_timeout):
+        with self.parent.timeout.set_to(new_visa_timeout):
             while received < fullsize:
-                data_temp = self.root_instrument.visa_handle.read_raw()
+                data_temp = self.parent.visa_handle.read_raw()
                 received += len(data_temp)
                 data += data_temp
 
