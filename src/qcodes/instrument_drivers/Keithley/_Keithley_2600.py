@@ -1092,14 +1092,19 @@ class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
         inner_start = float(inner_setpoints[0])
         inner_stop = float(inner_setpoints[-1])
         inner_param = cast("Parameter", inner.param)
-        inner_channel = infer_channel(inner_param).channel
+        inner_channel = infer_channel(inner_param)
+        if not isinstance(inner_channel, Keithley2600Channel):
+            raise ValueError(
+                "Inner sweep parameter must belong to a Keithley2600Channel."
+            )
+        inner_channel_name = inner_channel.channel
 
-        channel_to_measure = inner_channel
+        channel_to_measure = inner_channel_name
 
         if not measure_inner_channel:
             channels = ["smua", "smub"]
             channel_to_measure = next(
-                channel for channel in channels if channel != inner_channel
+                channel for channel in channels if channel != inner_channel_name
             )
 
         # Build the configuration
@@ -1111,7 +1116,7 @@ class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
             inner_param_name=inner_param.label,
             inner_param_unit=inner_param.unit,
             inner_param_full_name=inner_param.full_name,
-            inner_channel=inner_channel,
+            inner_channel=inner_channel_name,
             mode=mode,
             measurement_channel=channel_to_measure,
         )
@@ -1122,7 +1127,12 @@ class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
             outer_start = float(outer_setpoints[0])
             outer_stop = float(outer_setpoints[-1])
             outer_param = cast("Parameter", outer.param)
-            outer_channel = infer_channel(outer_param).channel
+            outer_channel = infer_channel(outer_param)
+            if not isinstance(outer_channel, Keithley2600Channel):
+                raise ValueError(
+                    "Outer sweep parameter must belong to a Keithley2600Channel."
+                )
+            outer_channel_name = outer_channel.channel
 
             config.outer_start = outer_start
             config.outer_stop = outer_stop
@@ -1131,19 +1141,15 @@ class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
             config.outer_param_name = outer_param.label
             config.outer_param_unit = outer_param.unit
             config.outer_param_full_name = outer_param.full_name
-            config.outer_channel = outer_channel
+            config.outer_channel = outer_channel_name
 
-        # Get the inner channel object where fastsweep should be called from
-        # (measurement happens on the inner channel)
-        inner_channel_obj: Keithley2600Channel = getattr(
-            self.root_instrument, inner_channel
-        )
-
+        # fastsweep should be called from inner channel object where
+        # measurement happens.
         # Store configuration on the inner channel - users call fastsweep there
-        inner_channel_obj._fastsweep_config = config
+        inner_channel._fastsweep_config = config
 
         # Update fastsweep parameter metadata on the inner channel
-        inner_channel_obj.fastsweep._update_metadata(config)
+        inner_channel.fastsweep._update_metadata(config)
 
     def _execute_lua(self, _script: list[str], steps: int) -> npt.NDArray:
         """
