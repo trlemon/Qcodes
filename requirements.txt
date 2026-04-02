@@ -273,7 +273,7 @@ partd==1.4.2
     # via dask
 pathspec==1.0.4
     # via mypy
-pillow==12.1.1
+pillow==12.2.0
     # via
     #   qcodes (pyproject.toml)
     #   matplotlib
@@ -454,19 +454,19 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
-types-jsonschema==4.26.0.20260325
+types-jsonschema==4.26.0.20260402
     # via qcodes (pyproject.toml)
-types-networkx==3.6.1.20260321
+types-networkx==3.6.1.20260402
     # via qcodes (pyproject.toml)
-types-pywin32==311.0.0.20260323
+types-pywin32==311.0.0.20260402
     # via qcodes (pyproject.toml)
-types-requests==2.33.0.20260327
+types-requests==2.33.0.20260402
     # via
     #   qcodes (pyproject.toml)
     #   types-tqdm
 types-tabulate==0.10.0.20260308
     # via qcodes (pyproject.toml)
-types-tqdm==4.67.3.20260303
+types-tqdm==4.67.3.20260402
     # via qcodes (pyproject.toml)
 typing-extensions==4.15.0
     # via
