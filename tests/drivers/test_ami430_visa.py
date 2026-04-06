@@ -1420,9 +1420,56 @@ def test_pause(ami430) -> None:
 
 def test_zero(ami430) -> None:
     """
-    Test that the zero method sends the ZERO command without raising.
+    Test that the zero method sends the ZERO command without raising
+    and invalidates the field parameter cache.
     """
+    # Set the field to a non-zero value so the cache is populated
+    ami430.field(0.5)
+    assert ami430.field.cache.valid is True
+
     ami430.zero()
+
+    # The field cache should be invalidated after zeroing
+    assert ami430.field.cache.valid is False
+
+
+def test_zero_updates_parent_setpoint(current_driver) -> None:
+    """
+    Test that calling zero() on a child instrument updates the parent
+    3D driver's internal _set_point so that setpoint tracking remains
+    consistent.
+    """
+    current_driver.cartesian((0.5, 0.6, 0.7))
+    assert np.allclose(current_driver.cartesian(), [0.5, 0.6, 0.7])
+
+    # Zero the x axis via the child instrument
+    current_driver._instrument_x.zero()
+
+    # The parent's setpoint should reflect x=0 while y and z remain
+    assert np.isclose(current_driver.x(), 0.0)
+    assert np.isclose(current_driver.y(), 0.6)
+    assert np.isclose(current_driver.z(), 0.7)
+
+
+def test_zero_updates_parent_setpoint_each_axis(current_driver) -> None:
+    """
+    Test that calling zero() on each child axis individually updates the
+    corresponding component of the parent 3D driver's _set_point.
+    """
+    current_driver.cartesian((0.3, 0.4, 0.5))
+
+    current_driver._instrument_y.zero()
+    assert np.isclose(current_driver.y(), 0.0)
+    assert np.isclose(current_driver.x(), 0.3)
+    assert np.isclose(current_driver.z(), 0.5)
+
+    current_driver._instrument_z.zero()
+    assert np.isclose(current_driver.z(), 0.0)
+    assert np.isclose(current_driver.x(), 0.3)
+    assert np.isclose(current_driver.y(), 0.0)
+
+    current_driver._instrument_x.zero()
+    assert np.allclose(current_driver.cartesian(), [0.0, 0.0, 0.0])
 
 
 def test_reset_quench(ami430) -> None:

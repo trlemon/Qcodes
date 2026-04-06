@@ -362,6 +362,9 @@ class AMIModel430(VisaInstrument):
     def zero(self) -> None:
         """Ramp to zero current"""
         self.write("ZERO")
+        self.field.cache.invalidate()
+        if self._parent_instrument is not None:
+            self._parent_instrument._update_setpoint_on_child_zero(self)
 
     def reset_quench(self) -> None:
         """Reset a quench condition on the instrument"""
@@ -1201,6 +1204,19 @@ class AMIModel4303D(Instrument):
             self._instrument_z,
         ):
             axis_instrument.pause()
+
+    def _update_setpoint_on_child_zero(self, instrument: AMIModel430) -> None:
+        """
+        Update the internal ``_set_point`` when a child instrument's
+        ``zero()`` method is called directly, so that the 3D driver's
+        setpoint tracking remains consistent.
+        """
+        if instrument is self._instrument_x:
+            self._set_point.set_component(x=0.0)
+        elif instrument is self._instrument_y:
+            self._set_point.set_component(y=0.0)
+        elif instrument is self._instrument_z:
+            self._set_point.set_component(z=0.0)
 
     def _request_field_change(self, instrument: AMIModel430, value: NumberType) -> None:
         """
