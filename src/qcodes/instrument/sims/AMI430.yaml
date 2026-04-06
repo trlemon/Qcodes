@@ -92,6 +92,8 @@ devices:
         getter:
           q: "STATE?"
           r: "{}"
+        setter:
+          q: "CONF:STATE {}"
 
       quench state:
         default: 0
@@ -106,6 +108,8 @@ devices:
         getter:
           q: "PERS?"
           r: "{}"
+        setter:
+          q: "CONF:PERS {}"
 
       persistent heater state:
         default: 0

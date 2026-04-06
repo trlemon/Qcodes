@@ -14,6 +14,7 @@ from pytest import FixtureRequest, LogCaptureFixture
 
 from qcodes.instrument import Instrument
 from qcodes.instrument_drivers.american_magnetics import (
+    AMI430Exception,
     AMI430Warning,
     AMIModel430,
     AMIModel4303D,
@@ -1498,3 +1499,146 @@ def test_reset(ami430) -> None:
     Test that the reset method sends the *RST command without raising.
     """
     ami430.reset()
+
+
+def test_can_start_ramping_returns_false_when_quenched(ami430) -> None:
+    """
+    Test that _can_start_ramping returns False when the instrument is in
+    a quench condition, and that set_field raises accordingly.
+    """
+    ami430.set_quenched()
+    assert ami430.is_quenched() is True
+    assert ami430._can_start_ramping() is False
+
+    with pytest.raises(AMI430Exception, match="Cannot ramp in current state"):
+        ami430.set_field(0.5, perform_safety_check=False)
+
+    # Clean up
+    ami430.reset_quench()
+
+
+def test_can_start_ramping_returns_false_when_persistent(ami430) -> None:
+    """
+    Test that _can_start_ramping returns False when the instrument is in
+    persistent mode, and that set_field raises accordingly.
+    """
+    # Put the instrument into persistent mode via the simulator
+    ami430.write("CONF:PERS 1")
+    assert ami430.switch_heater.in_persistent_mode() is True
+    assert ami430._can_start_ramping() is False
+
+    with pytest.raises(AMI430Exception, match="Cannot ramp in current state"):
+        ami430.set_field(0.5, perform_safety_check=False)
+
+    # Clean up
+    ami430.write("CONF:PERS 0")
+
+
+def test_can_start_ramping_returns_false_in_unexpected_state(ami430) -> None:
+    """
+    Test that _can_start_ramping returns False when the instrument is in
+    a state that is not 'holding', 'paused', 'at zero current', or
+    'ramping' (e.g. 'manual up', 'zeroing current').
+    """
+    # "manual up" is state 4
+    ami430.write("CONF:STATE 4")
+    assert ami430.ramping_state() == "manual up"
+    assert ami430._can_start_ramping() is False
+
+    # "zeroing current" is state 6
+    ami430.write("CONF:STATE 6")
+    assert ami430.ramping_state() == "zeroing current"
+    assert ami430._can_start_ramping() is False
+
+    # Clean up: restore to holding (state 2)
+    ami430.write("CONF:STATE 2")
+
+
+def test_can_start_ramping_returns_true_when_holding(ami430) -> None:
+    """
+    Test that _can_start_ramping returns True when the instrument is in
+    the 'holding' state (the default simulator state).
+    """
+    assert ami430.ramping_state() == "holding"
+    assert ami430._can_start_ramping() is True
+
+
+def test_can_start_ramping_returns_true_when_paused(ami430) -> None:
+    """
+    Test that _can_start_ramping returns True when the instrument is in
+    the 'paused' state.
+    """
+    ami430.write("CONF:STATE 3")
+    assert ami430.ramping_state() == "paused"
+    assert ami430._can_start_ramping() is True
+
+    # Clean up
+    ami430.write("CONF:STATE 2")
+
+
+def test_can_start_ramping_returns_true_when_at_zero_current(ami430) -> None:
+    """
+    Test that _can_start_ramping returns True when the instrument is in
+    the 'at zero current' state.
+    """
+    ami430.write("CONF:STATE 8")
+    assert ami430.ramping_state() == "at zero current"
+    assert ami430._can_start_ramping() is True
+
+    # Clean up
+    ami430.write("CONF:STATE 2")
+
+
+def test_can_start_ramping_when_ramping_with_heater_disabled(ami430) -> None:
+    """
+    Test that _can_start_ramping returns True when already ramping and
+    the switch heater is not enabled.
+    """
+    ami430.write("CONF:STATE 1")
+    assert ami430.ramping_state() == "ramping"
+    assert ami430.switch_heater.enabled() is False
+    assert ami430._can_start_ramping() is True
+
+    # Clean up
+    ami430.write("CONF:STATE 2")
+
+
+def test_can_start_ramping_when_ramping_with_heater_enabled_and_on(ami430) -> None:
+    """
+    Test that _can_start_ramping returns True when already ramping and
+    the switch heater is enabled and on (warm).
+    """
+    ami430.write("CONF:STATE 1")
+    ami430.switch_heater.enabled(True)
+    ami430.write("PS 1")
+
+    assert ami430.ramping_state() == "ramping"
+    assert ami430.switch_heater.enabled() is True
+    assert ami430.switch_heater.state() is True
+    assert ami430._can_start_ramping() is True
+
+    # Clean up
+    ami430.write("PS 0")
+    ami430.switch_heater.enabled(False)
+    ami430.write("CONF:STATE 2")
+
+
+def test_can_start_ramping_returns_false_when_ramping_with_heater_enabled_and_off(
+    ami430,
+) -> None:
+    """
+    Test that _can_start_ramping returns False when already ramping and
+    the switch heater is enabled but off (cold), meaning the persistent
+    switch is not heated.
+    """
+    ami430.write("CONF:STATE 1")
+    ami430.switch_heater.enabled(True)
+    # Heater enabled but state is off (default)
+    assert ami430.switch_heater.state() is False
+
+    assert ami430.ramping_state() == "ramping"
+    assert ami430._can_start_ramping() is False
+
+    # Clean up
+    ami430.switch_heater.enabled(False)
+    ami430.write("CONF:STATE 2")
