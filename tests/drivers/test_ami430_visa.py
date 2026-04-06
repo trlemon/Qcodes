@@ -140,6 +140,121 @@ def test_instantiation_from_names(
     assert driver._instrument_z is mag_z
 
 
+def test_parent_instrument_is_set_on_child_axes(current_driver) -> None:
+    """
+    Test that after creating AMIModel4303D, the _parent_instrument attribute
+    on each child axis instrument is set to the 3D driver instance.
+    """
+    assert current_driver._instrument_x._parent_instrument is current_driver
+    assert current_driver._instrument_y._parent_instrument is current_driver
+    assert current_driver._instrument_z._parent_instrument is current_driver
+
+
+def test_parent_instrument_is_none_without_3d_driver(ami430) -> None:
+    """
+    Test that a standalone AMIModel430 that is not part of a 3D driver
+    has _parent_instrument set to None.
+    """
+    assert ami430._parent_instrument is None
+
+
+def test_request_field_change_via_child_set_field(current_driver) -> None:
+    """
+    Test that calling set_field on a child instrument that belongs to a 3D
+    driver delegates to the 3D driver's _request_field_change, which routes
+    through _set_setpoints and performs safety checks. The 3D driver's
+    internal _set_point should be updated accordingly.
+    """
+    # Start from a known state
+    current_driver.cartesian((0.0, 0.0, 0.0))
+
+    # Set field directly on the child x instrument
+    current_driver._instrument_x.set_field(0.5)
+
+    # The 3D driver's setpoint should reflect the change
+    assert np.isclose(current_driver.x(), 0.5)
+    # y and z should remain at 0
+    assert np.isclose(current_driver.y(), 0.0)
+    assert np.isclose(current_driver.z(), 0.0)
+
+
+def test_request_field_change_respects_field_limits(current_driver) -> None:
+    """
+    Test that calling set_field on a child instrument still respects
+    the 3D driver's field limits when _request_field_change delegates
+    to _set_setpoints -> _adjust_child_instruments -> _verify_safe_setpoint.
+    """
+    # Set a state that is near the field limit boundary
+    current_driver.cartesian((1.0, 1.0, 0.0))
+
+    # Try to set z to a value that would exceed the field limit
+    # field_limit says norm < 2, so (1.0, 1.0, 1.5) has norm ~2.06 which is unsafe
+    # and it doesn't satisfy x==0 and y==0 for the z<3 rule either
+    with pytest.raises(ValueError, match="field would exceed limit"):
+        current_driver._instrument_z.set_field(1.5)
+
+
+def test_request_field_change_for_each_axis(current_driver) -> None:
+    """
+    Test that _request_field_change correctly routes for each axis (x, y, z)
+    by setting fields on each child instrument individually.
+    """
+    current_driver.cartesian((0.0, 0.0, 0.0))
+
+    current_driver._instrument_x.set_field(0.3)
+    assert np.isclose(current_driver.x(), 0.3)
+
+    current_driver._instrument_y.set_field(0.4)
+    assert np.isclose(current_driver.y(), 0.4)
+
+    current_driver._instrument_z.set_field(0.5)
+    assert np.isclose(current_driver.z(), 0.5)
+
+    # All three should now reflect the individually-set values
+    assert np.allclose(current_driver.cartesian(), [0.3, 0.4, 0.5])
+
+
+def test_request_field_change_unknown_instrument_raises(
+    current_driver, request: FixtureRequest
+) -> None:
+    """
+    Test that _request_field_change raises a NameError when called with
+    an instrument that is not one of the x/y/z child instruments.
+    """
+    request.addfinalizer(Instrument.close_all)
+    stranger = AMIModel430(
+        "stranger",
+        address="GPIB::4::INSTR",
+        pyvisa_sim_file="AMI430.yaml",
+        terminator="\n",
+    )
+
+    with pytest.raises(NameError, match="doesnt belong to its specified parent"):
+        current_driver._request_field_change(stranger, 0.5)
+
+
+def test_child_set_field_bypasses_parent_when_safety_check_false(
+    current_driver,
+) -> None:
+    """
+    Test that calling set_field with perform_safety_check=False on a child
+    instrument does NOT delegate to the parent 3D driver, even when
+    _parent_instrument is set. This is the path used internally by the
+    3D driver's _perform_default_ramp and _perform_simultaneous_ramp.
+    """
+    current_driver.cartesian((0.0, 0.0, 0.0))
+
+    # Directly set field bypassing parent safety check
+    current_driver._instrument_x.set_field(0.5, perform_safety_check=False)
+
+    # The child instrument should have ramped, but the 3D driver's
+    # internal _set_point should NOT have been updated (since we
+    # bypassed the parent)
+    assert np.isclose(current_driver._instrument_x.field(), 0.5)
+    # The 3D driver's x setpoint should still be 0.0
+    assert np.isclose(current_driver.x(), 0.0)
+
+
 def test_visa_interaction(request: FixtureRequest) -> None:
     """
     Test that closing one instrument we can still use the other simulated instruments.
