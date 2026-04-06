@@ -217,12 +217,15 @@ def test_request_field_change_for_each_axis(current_driver: AMIModel4303D) -> No
 
     current_driver._instrument_x.set_field(0.3)
     assert np.isclose(current_driver.x(), 0.3)
+    assert np.isclose(current_driver._instrument_x.field(), 0.3)
 
     current_driver._instrument_y.set_field(0.4)
     assert np.isclose(current_driver.y(), 0.4)
+    assert np.isclose(current_driver._instrument_y.field(), 0.4)
 
     current_driver._instrument_z.set_field(0.5)
     assert np.isclose(current_driver.z(), 0.5)
+    assert np.isclose(current_driver._instrument_z.field(), 0.5)
 
     # All three should now reflect the individually-set values
     assert np.allclose(current_driver.cartesian(), [0.3, 0.4, 0.5])
