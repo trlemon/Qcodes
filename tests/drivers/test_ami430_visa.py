@@ -1393,3 +1393,61 @@ def test_switch_heater_enabled(ami430, caplog) -> None:
     assert ami430.switch_heater.enabled() is True
     ami430.switch_heater.enabled(False)
     assert ami430.switch_heater.enabled() is False
+
+
+def test_get_error(ami430) -> None:
+    """
+    Test that get_error queries the instrument and returns a string response.
+    """
+    result = ami430.get_error()
+    assert isinstance(result, str)
+    assert "No Error" in result
+
+
+def test_ramp(ami430) -> None:
+    """
+    Test that the ramp method sends the RAMP command without raising.
+    """
+    ami430.ramp()
+
+
+def test_pause(ami430) -> None:
+    """
+    Test that the pause method sends the PAUSE command without raising.
+    """
+    ami430.pause()
+
+
+def test_zero(ami430) -> None:
+    """
+    Test that the zero method sends the ZERO command without raising.
+    """
+    ami430.zero()
+
+
+def test_reset_quench(ami430) -> None:
+    """
+    Test that reset_quench clears the quench condition on the instrument.
+    """
+    ami430.set_quenched()
+    assert ami430.is_quenched() is True
+    ami430.reset_quench()
+    assert ami430.is_quenched() is False
+
+
+def test_set_quenched(ami430) -> None:
+    """
+    Test that set_quenched sets the quench condition on the instrument.
+    """
+    assert ami430.is_quenched() is False
+    ami430.set_quenched()
+    assert ami430.is_quenched() is True
+    # Clean up
+    ami430.reset_quench()
+
+
+def test_reset(ami430) -> None:
+    """
+    Test that the reset method sends the *RST command without raising.
+    """
+    ami430.reset()
