@@ -218,7 +218,7 @@ class AMIModel430(VisaInstrument):
                 # read the hello part of the welcome message
                 self.visa_handle.read()
 
-        self._parent_instrument = None
+        self._parent_instrument: AMIModel4303D | None = None
 
         if reset:
             self.reset()
@@ -680,6 +680,10 @@ class AMIModel4303D(Instrument):
             if isinstance(instrument_z, AMIModel430)
             else find_ami430_with_name(instrument_z)
         )
+
+        self._instrument_x._parent_instrument = self
+        self._instrument_y._parent_instrument = self
+        self._instrument_z._parent_instrument = self
 
         self._field_limit: float | Iterable[CartesianFieldLimitFunction]
         if isinstance(field_limit, Iterable):
@@ -1204,13 +1208,12 @@ class AMIModel4303D(Instrument):
         individually. It results in additional safety checks being
         performed by this 3D driver.
         """
-        # TODO the _set_x _set_y _set_z methods don't seem to exist anywhere
         if instrument is self._instrument_x:
-            self._set_x(value)
+            self._set_setpoints(("x",), (float(value),))
         elif instrument is self._instrument_y:
-            self._set_y(value)
+            self._set_setpoints(("y",), (float(value),))
         elif instrument is self._instrument_z:
-            self._set_z(value)
+            self._set_setpoints(("z",), (float(value),))
         else:
             msg = "This magnet doesnt belong to its specified parent {}"
             raise NameError(msg.format(self))
