@@ -1642,3 +1642,231 @@ def test_can_start_ramping_returns_false_when_ramping_with_heater_enabled_and_of
     # Clean up
     ami430.switch_heater.enabled(False)
     ami430.write("CONF:STATE 2")
+
+
+def test_switch_heater_on_raises_when_not_enabled(ami430) -> None:
+    """
+    Test that turning the switch heater on when it is not enabled
+    raises an AMI430Exception.
+    """
+    assert ami430.switch_heater.enabled() is False
+    with pytest.raises(AMI430Exception, match="Switch not enabled"):
+        ami430.switch_heater.state(True)
+
+
+def test_switch_heater_off_raises_when_not_enabled(ami430) -> None:
+    """
+    Test that turning the switch heater off when it is not enabled
+    raises an AMI430Exception.
+    """
+    assert ami430.switch_heater.enabled() is False
+    with pytest.raises(AMI430Exception, match="Switch not enabled"):
+        ami430.switch_heater.state(False)
+
+
+def test_switch_heater_on_when_enabled(ami430) -> None:
+    """
+    Test that setting switch heater state to True succeeds when the
+    switch heater is enabled.
+    """
+    ami430.switch_heater.enabled(True)
+    ami430.switch_heater.state(True)
+    assert ami430.switch_heater.state() is True
+    # Clean up
+    ami430.switch_heater.state(False)
+    ami430.switch_heater.enabled(False)
+
+
+def test_switch_heater_off_when_enabled(ami430) -> None:
+    """
+    Test that setting switch heater state to False succeeds when the
+    switch heater is enabled.
+    """
+    ami430.switch_heater.enabled(True)
+    ami430.switch_heater.state(True)
+    ami430.switch_heater.state(False)
+    assert ami430.switch_heater.state() is False
+    ami430.switch_heater.enabled(False)
+
+
+def test_ami430_init_with_reset(request: FixtureRequest, mocker) -> None:
+    """
+    Test that AMIModel430 can be instantiated with reset=True
+    to cover the reset path during initialization.
+
+    We mock the reset method because pyvisa-sim's ``*RST`` dialogue
+    leaves an empty response in the read buffer which corrupts
+    subsequent queries.
+    """
+    request.addfinalizer(Instrument.close_all)
+    mock_reset = mocker.patch.object(AMIModel430, "reset")
+    mag = AMIModel430(
+        "ami430_reset",
+        address="GPIB::4::INSTR",
+        pyvisa_sim_file="AMI430.yaml",
+        terminator="\n",
+        reset=True,
+    )
+    mock_reset.assert_called_once()
+    # The instrument should be functional after init
+    assert mag.field() is not None
+
+
+def test_ami430_init_with_custom_current_ramp_limit(
+    request: FixtureRequest,
+) -> None:
+    """
+    Test that AMIModel430 can be instantiated with a custom
+    current_ramp_limit value.
+    """
+    request.addfinalizer(Instrument.close_all)
+    custom_limit = 0.03
+    mag = AMIModel430(
+        "ami430_custom_ramp",
+        address="GPIB::4::INSTR",
+        pyvisa_sim_file="AMI430.yaml",
+        terminator="\n",
+        current_ramp_limit=custom_limit,
+    )
+    assert mag.current_ramp_limit() == custom_limit
+
+
+def test_set_field_exceeding_field_limit(ami430) -> None:
+    """
+    Test that set_field raises a ValueError when the requested field
+    exceeds the individual instrument's field limit (coil_constant *
+    current_limit).
+    """
+    field_lim = float(ami430.ask("COIL?")) * ami430.current_limit()
+    with pytest.raises(ValueError, match="Aborted _set_field"):
+        ami430.set_field(field_lim + 1, perform_safety_check=False)
+
+
+def test_set_field_raises_when_switch_heater_enabled_but_off(ami430) -> None:
+    """
+    Test that set_field raises an AMI430Exception when the switch heater
+    is enabled but its state is off (cold), meaning the persistent switch
+    is not heated.
+    """
+    ami430.switch_heater.enabled(True)
+    # Switch heater is enabled but off (default state is off)
+    assert ami430.switch_heater.state() is False
+    with pytest.raises(AMI430Exception, match="Switch heater is not on"):
+        ami430.set_field(0.5, perform_safety_check=False)
+    # Clean up
+    ami430.switch_heater.enabled(False)
+
+
+def test_3d_driver_get_idn(current_driver) -> None:
+    """Test that AMIModel4303D.get_idn returns the expected IDN dict."""
+    idn = current_driver.get_idn()
+    assert idn["vendor"] == "American Magnetics"
+    assert idn["model"] == "AMI430_3D"
+    assert idn["serial"] is None
+    assert idn["firmware"] is None
+
+
+def test_3d_driver_invalid_field_limit_type(
+    magnet_axes_instances, request: FixtureRequest
+) -> None:
+    """Test that passing an invalid field_limit type raises ValueError."""
+    mag_x, mag_y, mag_z = magnet_axes_instances
+    request.addfinalizer(Instrument.close_all)
+    with pytest.raises(ValueError, match="field limit should either be a number"):
+        AMIModel4303D("AMI430_3D", mag_x, mag_y, mag_z, None)  # type: ignore[arg-type]
+
+
+def test_ramp_simultaneously(current_driver) -> None:
+    """Test the ramp_simultaneously method on AMIModel4303D."""
+    current_driver.cartesian((0.0, 0.0, 0.0))
+    setpoint = FieldVector(x=0.5, y=0.5, z=0.5)
+    duration = 10.0  # seconds
+    current_driver.ramp_simultaneously(setpoint=setpoint, duration=duration)
+    # After the ramp, the setpoint should be updated
+    assert np.allclose(current_driver.cartesian(), [0.5, 0.5, 0.5])
+
+
+def test_calculate_axes_ramp_rates_for() -> None:
+    """Test the static method calculate_axes_ramp_rates_for."""
+    start = FieldVector(x=0.0, y=0.0, z=0.0)
+    setpoint = FieldVector(x=1.0, y=0.0, z=0.0)
+    duration = 10.0
+    rates = AMIModel4303D.calculate_axes_ramp_rates_for(start, setpoint, duration)
+    assert len(rates) == 3
+    assert np.isclose(rates[0], 0.1)  # 1.0 / 10.0
+    assert np.isclose(rates[1], 0.0)
+    assert np.isclose(rates[2], 0.0)
+
+
+def test_calculate_vector_ramp_rate_from_duration() -> None:
+    """Test the static method calculate_vector_ramp_rate_from_duration."""
+    start = FieldVector(x=0.0, y=0.0, z=0.0)
+    setpoint = FieldVector(x=3.0, y=4.0, z=0.0)
+    duration = 10.0
+    rate = AMIModel4303D.calculate_vector_ramp_rate_from_duration(
+        start, setpoint, duration
+    )
+    assert np.isclose(rate, 0.5)  # distance=5.0, 5.0/10.0 = 0.5
+
+
+def test_raise_if_not_same_field_units(current_driver) -> None:
+    """Test that mismatched field_units raises ValueError."""
+    current_driver._instrument_x.field_units("kilogauss")
+    with pytest.raises(ValueError, match="field_units"):
+        current_driver._raise_if_not_same_field_and_ramp_rate_units()
+    # Clean up
+    current_driver._instrument_x.field_units("tesla")
+
+
+def test_raise_if_not_same_ramp_rate_units(current_driver) -> None:
+    """Test that mismatched ramp_rate_units raises ValueError."""
+    current_driver._instrument_x.ramp_rate_units("minutes")
+    with pytest.raises(ValueError, match="ramp_rate_units"):
+        current_driver._raise_if_not_same_field_and_ramp_rate_units()
+    # Clean up
+    current_driver._instrument_x.ramp_rate_units("seconds")
+
+
+def test_adjust_child_instruments_raises_when_axis_ramping(current_driver) -> None:
+    """Test that _adjust_child_instruments raises when an axis is ramping."""
+    current_driver._instrument_x.write("CONF:STATE 1")  # ramping
+    with pytest.raises(AMI430Exception, match="is already ramping"):
+        current_driver._adjust_child_instruments((0.5, 0.5, 0.5))
+    # Clean up
+    current_driver._instrument_x.write("CONF:STATE 2")  # holding
+
+
+def test_update_individual_axes_ramp_rates_raises_without_vector_ramp_rate(
+    current_driver,
+) -> None:
+    """Test that _update_individual_axes_ramp_rates raises when vector_ramp_rate is None."""
+    # vector_ramp_rate is None by default (no initial_value set, get_cmd is None)
+    assert current_driver.vector_ramp_rate() is None
+    with pytest.raises(ValueError, match="vector_ramp_rate"):
+        current_driver._update_individual_axes_ramp_rates((0.5, 0.5, 0.5))
+
+
+def test_simultaneous_ramp_skips_axis_already_at_target(
+    current_driver, caplog: LogCaptureFixture
+) -> None:
+    """Test that simultaneous ramp skips an axis that is already at its target."""
+    # Set to a known state
+    current_driver.cartesian((0.5, 0.0, 0.0))
+
+    current_driver.ramp_mode("simultaneous")
+    current_driver.vector_ramp_rate(0.1)
+
+    with caplog.at_level(logging.DEBUG, logger=LOG_NAME):
+        # Ramp to (0.5, 0.5, 0.0) - x is already at 0.5
+        current_driver.cartesian((0.5, 0.5, 0.0))
+
+    messages = [record.message for record in caplog.records]
+    assert any("already at target field" in msg for msg in messages)
+
+    # Clean up
+    current_driver.ramp_mode("default")
+
+
+def test_3d_driver_pause(current_driver) -> None:
+    """Test that AMIModel4303D.pause pauses all axes without error."""
+    current_driver.pause()
