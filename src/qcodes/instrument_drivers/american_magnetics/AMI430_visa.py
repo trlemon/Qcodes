@@ -160,7 +160,11 @@ class AMI430SwitchHeater(InstrumentChannel["AMIModel430"]):
         if params_to_skip_update is None:
             params_to_skip_update = []
 
-        if not self.enabled():
+        if update is True:
+            enabled = self.enabled.get()
+        else:
+            enabled = self.enabled.cache.get()
+        if not enabled:
             heater_params = [
                 "state",
                 "in_persistent_mode",
