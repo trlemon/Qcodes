@@ -6,7 +6,7 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import ExitStack
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, Concatenate, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Concatenate, TypeVar, cast
 
 import numpy as np
 from pyvisa import VisaIOError
@@ -151,6 +151,32 @@ class AMI430SwitchHeater(InstrumentChannel["AMIModel430"]):
         if self.enabled() is False:
             return False
         return bool(int(self.ask("PS?").strip()))
+
+    def snapshot_base(
+        self,
+        update: bool | None = False,
+        params_to_skip_update: Sequence[str] | None = None,
+    ) -> dict[str, Any]:
+        if params_to_skip_update is None:
+            params_to_skip_update = []
+
+        if update is True:
+            enabled = self.enabled.get()
+        else:
+            enabled = self.enabled.cache.get()
+        if not enabled:
+            heater_params = [
+                "state",
+                "in_persistent_mode",
+                "current",
+                "heat_time",
+                "cool_time",
+            ]
+            params_to_skip_update = list(params_to_skip_update) + heater_params
+
+        return super().snapshot_base(
+            update=update, params_to_skip_update=params_to_skip_update
+        )
 
 
 class AMIModel430(VisaInstrument):
