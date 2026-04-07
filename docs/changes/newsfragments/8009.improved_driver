@@ -1,4 +1,0 @@
-The ``AMI430SwitchHeater`` snapshot now skips updating heater-specific parameters
-(``state``, ``in_persistent_mode``, ``current``, ``heat_time``, ``cool_time``) when
-the switch heater is not enabled. This prevents VISA query failures on real hardware
-when the heater is not installed.
