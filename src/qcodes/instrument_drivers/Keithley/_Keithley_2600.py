@@ -13,7 +13,6 @@ import numpy.typing as npt
 import qcodes.validators as vals
 from qcodes.extensions.infer import infer_channel
 from qcodes.instrument import (
-    Instrument,
     InstrumentChannel,
     VisaInstrument,
     VisaInstrumentKWArgs,
@@ -412,7 +411,7 @@ class LuaSweepParameter(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel
             return self.instrument._execute_lua(script, config.total_points)
 
 
-class TimeTrace(ParameterWithSetpoints):
+class TimeTrace(ParameterWithSetpoints[npt.NDArray, "Keithley2600Channel"]):
     """
     A parameter class that holds the data corresponding to the time dependence of
     current and voltage.
@@ -503,7 +502,7 @@ class TimeTrace(ParameterWithSetpoints):
         return data
 
 
-class TimeAxis(Parameter):
+class TimeAxis(Parameter[npt.NDArray, "Keithley2600Channel"]):
     """
     A simple :class:`.Parameter` that holds all the times (relative to the
     measurement start) at which the points of the time trace were acquired.
@@ -640,13 +639,13 @@ class _MeasurementVoltageParameter(_ParameterWithStatus):
         return value
 
 
-class Keithley2600Channel(InstrumentChannel):
+class Keithley2600Channel(InstrumentChannel["Keithley2600"]):
     """
     Class to hold the two Keithley channels, i.e.
     SMUA and SMUB.
     """
 
-    def __init__(self, parent: Instrument, name: str, channel: str) -> None:
+    def __init__(self, parent: Keithley2600, name: str, channel: str) -> None:
         """
         Args:
             parent: The Instrument instance to which the channel is
@@ -665,8 +664,8 @@ class Keithley2600Channel(InstrumentChannel):
         self._extra_visa_timeout = 5000
         self._measurement_duration_factor = 2  # Ensures that we are always above
         # the expected time.
-        vranges = self._parent._vranges
-        iranges = self._parent._iranges
+        vranges = self.parent._vranges
+        iranges = self.parent._iranges
         vlimit_minmax = self.parent._vlimit_minmax
         ilimit_minmax = self.parent._ilimit_minmax
 
@@ -1093,14 +1092,19 @@ class Keithley2600Channel(InstrumentChannel):
         inner_start = float(inner_setpoints[0])
         inner_stop = float(inner_setpoints[-1])
         inner_param = cast("Parameter", inner.param)
-        inner_channel = infer_channel(inner_param).channel
+        inner_channel = infer_channel(inner_param)
+        if not isinstance(inner_channel, Keithley2600Channel):
+            raise ValueError(
+                "Inner sweep parameter must belong to a Keithley2600Channel."
+            )
+        inner_channel_name = inner_channel.channel
 
-        channel_to_measure = inner_channel
+        channel_to_measure = inner_channel_name
 
         if not measure_inner_channel:
             channels = ["smua", "smub"]
             channel_to_measure = next(
-                channel for channel in channels if channel != inner_channel
+                channel for channel in channels if channel != inner_channel_name
             )
 
         # Build the configuration
@@ -1112,7 +1116,7 @@ class Keithley2600Channel(InstrumentChannel):
             inner_param_name=inner_param.label,
             inner_param_unit=inner_param.unit,
             inner_param_full_name=inner_param.full_name,
-            inner_channel=inner_channel,
+            inner_channel=inner_channel_name,
             mode=mode,
             measurement_channel=channel_to_measure,
         )
@@ -1123,7 +1127,12 @@ class Keithley2600Channel(InstrumentChannel):
             outer_start = float(outer_setpoints[0])
             outer_stop = float(outer_setpoints[-1])
             outer_param = cast("Parameter", outer.param)
-            outer_channel = infer_channel(outer_param).channel
+            outer_channel = infer_channel(outer_param)
+            if not isinstance(outer_channel, Keithley2600Channel):
+                raise ValueError(
+                    "Outer sweep parameter must belong to a Keithley2600Channel."
+                )
+            outer_channel_name = outer_channel.channel
 
             config.outer_start = outer_start
             config.outer_stop = outer_stop
@@ -1132,19 +1141,15 @@ class Keithley2600Channel(InstrumentChannel):
             config.outer_param_name = outer_param.label
             config.outer_param_unit = outer_param.unit
             config.outer_param_full_name = outer_param.full_name
-            config.outer_channel = outer_channel
+            config.outer_channel = outer_channel_name
 
-        # Get the inner channel object where fastsweep should be called from
-        # (measurement happens on the inner channel)
-        inner_channel_obj: Keithley2600Channel = getattr(
-            self.root_instrument, inner_channel
-        )
-
+        # fastsweep should be called from inner channel object where
+        # measurement happens.
         # Store configuration on the inner channel - users call fastsweep there
-        inner_channel_obj._fastsweep_config = config
+        inner_channel._fastsweep_config = config
 
         # Update fastsweep parameter metadata on the inner channel
-        inner_channel_obj.fastsweep._update_metadata(config)
+        inner_channel.fastsweep._update_metadata(config)
 
     def _execute_lua(self, _script: list[str], steps: int) -> npt.NDArray:
         """
@@ -1165,7 +1170,7 @@ class Keithley2600Channel(InstrumentChannel):
             estimated_measurement_duration + _time_trace_extra_visa_timeout
         )
 
-        self.write(self.root_instrument._scriptwrapper(program=_script, debug=True))
+        self.write(self.parent._scriptwrapper(program=_script, debug=True))
 
         # now poll all the data
         # The problem is that a '\n' character might by chance be present in
@@ -1174,9 +1179,9 @@ class Keithley2600Channel(InstrumentChannel):
         received = 0
         data = b""
         # we must wait for the script to execute
-        with self.root_instrument.timeout.set_to(new_visa_timeout):
+        with self.parent.timeout.set_to(new_visa_timeout):
             while received < fullsize:
-                data_temp = self.root_instrument.visa_handle.read_raw()
+                data_temp = self.parent.visa_handle.read_raw()
                 received += len(data_temp)
                 data += data_temp
 
