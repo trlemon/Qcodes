@@ -1,0 +1,8 @@
+Converted ``get_error``, ``ramp``, ``pause``, ``zero``, ``reset_quench``, ``set_quenched``,
+and ``reset`` on ``AMIModel430`` from QCoDeS functions (``add_function``) to proper methods.
+The ``zero`` method now invalidates the ``field`` parameter cache and updates the parent
+``AMIModel4303D`` driver's internal setpoint tracking when called on a child instrument.
+Fixed ``AMIModel4303D`` to properly set ``_parent_instrument`` on child ``AMIModel430``
+instruments during initialization, enabling the safety-check delegation path in
+``set_field``. Also fixed ``_request_field_change`` to correctly call ``_set_setpoints``
+instead of non-existent ``_set_x``/``_set_y``/``_set_z`` methods.
