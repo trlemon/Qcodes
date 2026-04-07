@@ -1445,10 +1445,36 @@ def test_switch_heater_enabled(ami430: AMIModel430, caplog: LogCaptureFixture) -
     # make sure that getting snapshot with heater disabled works without warning
     caplog.clear()
     with caplog.at_level(logging.WARNING, logger=ami430.log.name):
-        ami430.snapshot(update=True)
+        snap = ami430.snapshot(update=True)
     assert len(caplog.records) == 0
+
+    # When heater is disabled, heater-specific parameters should not be updated
+    heater_snap = snap["submodules"]["switch_heater"]["parameters"]
+    for param_name in (
+        "state",
+        "in_persistent_mode",
+        "current",
+        "heat_time",
+        "cool_time",
+    ):
+        assert heater_snap[param_name]["ts"] is None, (
+            f"Parameter {param_name} should not have been updated when heater is disabled"
+        )
+
+    # When heater is enabled, snapshot should update all parameters
     ami430.switch_heater.enabled(True)
-    assert ami430.switch_heater.enabled() is True
+    snap_enabled = ami430.snapshot(update=True)
+    heater_snap_enabled = snap_enabled["submodules"]["switch_heater"]["parameters"]
+    for param_name in (
+        "state",
+        "in_persistent_mode",
+        "current",
+        "heat_time",
+        "cool_time",
+    ):
+        assert heater_snap_enabled[param_name]["ts"] is not None, (
+            f"Parameter {param_name} should have been updated when heater is enabled"
+        )
     ami430.switch_heater.enabled(False)
     assert ami430.switch_heater.enabled() is False
 
