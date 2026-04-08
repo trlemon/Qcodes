@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import struct
 import warnings
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -12,9 +15,12 @@ from qcodes.instrument_drivers.tektronix import (
 from qcodes.instrument_drivers.tektronix.AWG5014 import parsestr
 from qcodes.utils.deprecate import QCoDeSDeprecationWarning
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
 
 @pytest.fixture(scope="function")
-def awg():
+def awg() -> Generator[TektronixAWG5014]:
     awg_sim = TektronixAWG5014(
         "awg_sim",
         address="GPIB0::1::INSTR",
@@ -30,31 +36,31 @@ def awg():
 # ── Initialisation and structure ──────────────────────────────────────
 
 
-def test_init_awg(awg) -> None:
+def test_init_awg(awg: TektronixAWG5014) -> None:
     idn_dict = awg.IDN()
 
     assert idn_dict["vendor"] == "QCoDeS"
 
 
-def test_channel_count(awg) -> None:
+def test_channel_count(awg: TektronixAWG5014) -> None:
     """The instrument should have exactly 4 output channels."""
     assert len(awg.channels) == 4
 
 
-def test_channel_type(awg) -> None:
+def test_channel_type(awg: TektronixAWG5014) -> None:
     """Each channel should be a TektronixAWG5014Channel."""
     for ch in awg.channels:
         assert isinstance(ch, TektronixAWG5014Channel)
 
 
-def test_marker_subchannels(awg) -> None:
+def test_marker_subchannels(awg: TektronixAWG5014) -> None:
     """Each channel should have two marker submodules."""
     for ch in awg.channels:
         assert isinstance(ch.m1, TektronixAWG5014Marker)
         assert isinstance(ch.m2, TektronixAWG5014Marker)
 
 
-def test_channel_submodule_names(awg) -> None:
+def test_channel_submodule_names(awg: TektronixAWG5014) -> None:
     """Channels should be accessible as submodules ch1..ch4."""
     for i in range(1, 5):
         name = f"ch{i}"
@@ -62,7 +68,7 @@ def test_channel_submodule_names(awg) -> None:
         assert awg.submodules[name].channel == i
 
 
-def test_marker_channel_and_marker_numbers(awg) -> None:
+def test_marker_channel_and_marker_numbers(awg: TektronixAWG5014) -> None:
     """Markers should record their parent channel and marker number."""
     for i, ch in enumerate(awg.channels, start=1):
         assert ch.m1.channel == i
@@ -89,27 +95,27 @@ class TestParsestr:
 
 
 class TestNewlinestripper:
-    def test_strips_trailing_newline(self, awg) -> None:
+    def test_strips_trailing_newline(self, awg: TektronixAWG5014) -> None:
         assert awg.newlinestripper("hello\n") == "hello"
 
-    def test_no_trailing_newline(self, awg) -> None:
+    def test_no_trailing_newline(self, awg: TektronixAWG5014) -> None:
         assert awg.newlinestripper("hello") == "hello"
 
-    def test_empty_string(self, awg) -> None:
+    def test_empty_string(self, awg: TektronixAWG5014) -> None:
         assert awg.newlinestripper("") == ""
 
-    def test_only_newline(self, awg) -> None:
+    def test_only_newline(self, awg: TektronixAWG5014) -> None:
         assert awg.newlinestripper("\n") == ""
 
 
 class TestTekOutofrangeGetParser:
-    def test_normal_value(self, awg) -> None:
+    def test_normal_value(self, awg: TektronixAWG5014) -> None:
         assert awg._tek_outofrange_get_parser("1.5") == 1.5
 
-    def test_out_of_range_value(self, awg) -> None:
+    def test_out_of_range_value(self, awg: TektronixAWG5014) -> None:
         assert awg._tek_outofrange_get_parser("9.9e37") == float("INF")
 
-    def test_zero(self, awg) -> None:
+    def test_zero(self, awg: TektronixAWG5014) -> None:
         assert awg._tek_outofrange_get_parser("0") == 0.0
 
 
@@ -117,51 +123,51 @@ class TestTekOutofrangeGetParser:
 
 
 class TestInstrumentParameters:
-    def test_clock_freq_get(self, awg) -> None:
+    def test_clock_freq_get(self, awg: TektronixAWG5014) -> None:
         val = awg.clock_freq.get()
         assert val == 1e9
 
-    def test_trigger_impedance_get(self, awg) -> None:
+    def test_trigger_impedance_get(self, awg: TektronixAWG5014) -> None:
         val = awg.trigger_impedance.get()
         assert val == 50.0
 
-    def test_clock_source_get(self, awg) -> None:
+    def test_clock_source_get(self, awg: TektronixAWG5014) -> None:
         assert awg.clock_source.get() == "INT"
 
-    def test_ref_source_get(self, awg) -> None:
+    def test_ref_source_get(self, awg: TektronixAWG5014) -> None:
         assert awg.ref_source.get() == "INT"
 
-    def test_trigger_source_get(self, awg) -> None:
+    def test_trigger_source_get(self, awg: TektronixAWG5014) -> None:
         assert awg.trigger_source.get() == "INT"
 
-    def test_trigger_level_get(self, awg) -> None:
+    def test_trigger_level_get(self, awg: TektronixAWG5014) -> None:
         assert awg.trigger_level.get() == 0.0
 
-    def test_event_impedance_get(self, awg) -> None:
+    def test_event_impedance_get(self, awg: TektronixAWG5014) -> None:
         assert awg.event_impedance.get() == 50.0
 
-    def test_event_level_get(self, awg) -> None:
+    def test_event_level_get(self, awg: TektronixAWG5014) -> None:
         assert awg.event_level.get() == 0.0
 
-    def test_run_mode_get(self, awg) -> None:
+    def test_run_mode_get(self, awg: TektronixAWG5014) -> None:
         assert awg.run_mode.get() == "CONT"
 
-    def test_trigger_slope_get(self, awg) -> None:
+    def test_trigger_slope_get(self, awg: TektronixAWG5014) -> None:
         assert awg.trigger_slope.get() == "POS"
 
-    def test_event_polarity_get(self, awg) -> None:
+    def test_event_polarity_get(self, awg: TektronixAWG5014) -> None:
         assert awg.event_polarity.get() == "POS"
 
-    def test_event_jump_timing_get(self, awg) -> None:
+    def test_event_jump_timing_get(self, awg: TektronixAWG5014) -> None:
         assert awg.event_jump_timing.get() == "SYNC"
 
-    def test_DC_output_get(self, awg) -> None:
+    def test_DC_output_get(self, awg: TektronixAWG5014) -> None:
         assert awg.DC_output.get() == 0
 
-    def test_sequence_length_get(self, awg) -> None:
+    def test_sequence_length_get(self, awg: TektronixAWG5014) -> None:
         assert awg.sequence_length.get() == 0
 
-    def test_get_state(self, awg) -> None:
+    def test_get_state(self, awg: TektronixAWG5014) -> None:
         assert awg.get_state() == "Idle"
 
 
@@ -169,23 +175,23 @@ class TestInstrumentParameters:
 
 
 class TestChannelParameters:
-    def test_channel_state_get(self, awg) -> None:
+    def test_channel_state_get(self, awg: TektronixAWG5014) -> None:
         assert awg.channels[0].state.get() == 0
 
-    def test_channel_amp_get(self, awg) -> None:
+    def test_channel_amp_get(self, awg: TektronixAWG5014) -> None:
         assert awg.channels[0].amp.get() == 0.5
 
-    def test_channel_offset_get(self, awg) -> None:
+    def test_channel_offset_get(self, awg: TektronixAWG5014) -> None:
         assert awg.channels[0].offset.get() == 0.0
 
-    def test_channel_dc_out_get(self, awg) -> None:
+    def test_channel_dc_out_get(self, awg: TektronixAWG5014) -> None:
         assert awg.channels[0].DC_out.get() == 0.0
 
-    def test_channel_filter_get(self, awg) -> None:
+    def test_channel_filter_get(self, awg: TektronixAWG5014) -> None:
         # sim returns 9.9e37 → parsed to inf
         assert awg.channels[0].filter.get() == float("inf")
 
-    def test_all_channels_have_consistent_defaults(self, awg) -> None:
+    def test_all_channels_have_consistent_defaults(self, awg: TektronixAWG5014) -> None:
         """All four channels should return the same default values."""
         for ch in awg.channels:
             assert ch.state.get() == 0
@@ -197,19 +203,19 @@ class TestChannelParameters:
 
 
 class TestMarkerParameters:
-    def test_marker_delay_get(self, awg) -> None:
+    def test_marker_delay_get(self, awg: TektronixAWG5014) -> None:
         ch1 = awg.channels[0]
         assert ch1.m1.delay.get() == 0.0
 
-    def test_marker_high_get(self, awg) -> None:
+    def test_marker_high_get(self, awg: TektronixAWG5014) -> None:
         ch1 = awg.channels[0]
         assert ch1.m1.high.get() == 1.0
 
-    def test_marker_low_get(self, awg) -> None:
+    def test_marker_low_get(self, awg: TektronixAWG5014) -> None:
         ch1 = awg.channels[0]
         assert ch1.m1.low.get() == 0.0
 
-    def test_all_markers_have_consistent_defaults(self, awg) -> None:
+    def test_all_markers_have_consistent_defaults(self, awg: TektronixAWG5014) -> None:
         """All 8 markers should share the same defaults."""
         for ch in awg.channels:
             for mrk in (ch.m1, ch.m2):
@@ -222,17 +228,17 @@ class TestMarkerParameters:
 
 
 class TestAllChannelsOnOff:
-    def test_all_channels_off(self, awg) -> None:
+    def test_all_channels_off(self, awg: TektronixAWG5014) -> None:
         awg.all_channels_off()
         for ch in awg.channels:
             assert ch.state.get() == 0
 
-    def test_all_channels_on(self, awg) -> None:
+    def test_all_channels_on(self, awg: TektronixAWG5014) -> None:
         awg.all_channels_on()
         for ch in awg.channels:
             assert ch.state.get() == 1
 
-    def test_all_channels_on_then_off(self, awg) -> None:
+    def test_all_channels_on_then_off(self, awg: TektronixAWG5014) -> None:
         awg.all_channels_on()
         awg.all_channels_off()
         for ch in awg.channels:
@@ -243,7 +249,7 @@ class TestAllChannelsOnOff:
 
 
 class TestPackWaveform:
-    def test_basic_pack(self, awg) -> None:
+    def test_basic_pack(self, awg: TektronixAWG5014) -> None:
         N = 25
         rng = np.random.default_rng(42)
         wf = rng.random(N) * 2 - 1  # values in [-1, 1]
@@ -256,7 +262,7 @@ class TestPackWaveform:
         assert len(result) == N
         assert result.dtype == np.uint16
 
-    def test_known_values(self, awg) -> None:
+    def test_known_values(self, awg: TektronixAWG5014) -> None:
         """Verify encoding of specific known inputs."""
         wf = np.array([0.0])
         m1 = np.array([0])
@@ -265,7 +271,7 @@ class TestPackWaveform:
         # wf=0 → 0*8191+8191.5 = 8191.5, trunc → 8191
         assert result[0] == 8191
 
-    def test_markers_set_correct_bits(self, awg) -> None:
+    def test_markers_set_correct_bits(self, awg: TektronixAWG5014) -> None:
         """Marker bits should be at positions 14 and 15."""
         wf = np.array([0.0])
         # m1 only
@@ -278,23 +284,23 @@ class TestPackWaveform:
         r_both = awg._pack_waveform(wf, np.array([1]), np.array([1]))
         assert r_both[0] & 0xC000 == 0xC000
 
-    def test_mismatched_lengths_raises(self, awg) -> None:
+    def test_mismatched_lengths_raises(self, awg: TektronixAWG5014) -> None:
         with pytest.raises(Exception, match=r"sizes.*do not match"):
             awg._pack_waveform(np.array([0.0, 0.0]), np.array([0]), np.array([0]))
 
-    def test_waveform_out_of_bounds_raises(self, awg) -> None:
+    def test_waveform_out_of_bounds_raises(self, awg: TektronixAWG5014) -> None:
         with pytest.raises(TypeError, match="Waveform values out of bo"):
             awg._pack_waveform(np.array([1.5]), np.array([0]), np.array([0]))
 
-    def test_waveform_below_bounds_raises(self, awg) -> None:
+    def test_waveform_below_bounds_raises(self, awg: TektronixAWG5014) -> None:
         with pytest.raises(TypeError, match="Waveform values out of bo"):
             awg._pack_waveform(np.array([-1.5]), np.array([0]), np.array([0]))
 
-    def test_invalid_marker1_raises(self, awg) -> None:
+    def test_invalid_marker1_raises(self, awg: TektronixAWG5014) -> None:
         with pytest.raises(TypeError, match="Marker 1"):
             awg._pack_waveform(np.array([0.0]), np.array([2]), np.array([0]))
 
-    def test_invalid_marker2_raises(self, awg) -> None:
+    def test_invalid_marker2_raises(self, awg: TektronixAWG5014) -> None:
         with pytest.raises(TypeError, match="Marker 2"):
             awg._pack_waveform(np.array([0.0]), np.array([0]), np.array([3]))
 
@@ -303,7 +309,7 @@ class TestPackWaveform:
 
 
 class TestPackRecord:
-    def test_pack_short(self, awg) -> None:
+    def test_pack_short(self, awg: TektronixAWG5014) -> None:
         """Pack a 16-bit integer record."""
         result = awg._pack_record("MAGIC", 5000, "h")
         # name = "MAGIC\0" (6 bytes), data = 2 bytes (short)
@@ -314,7 +320,7 @@ class TestPackRecord:
         data_val = struct.unpack_from("<h", result, 8 + name_size)[0]
         assert data_val == 5000
 
-    def test_pack_double(self, awg) -> None:
+    def test_pack_double(self, awg: TektronixAWG5014) -> None:
         """Pack a 64-bit float record."""
         result = awg._pack_record("SAMPLING_RATE", 1e9, "d")
         name_size, data_size = struct.unpack_from("<II", result, 0)
@@ -322,7 +328,7 @@ class TestPackRecord:
         data_val = struct.unpack_from("<d", result, 8 + name_size)[0]
         assert data_val == 1e9
 
-    def test_pack_string(self, awg) -> None:
+    def test_pack_string(self, awg: TektronixAWG5014) -> None:
         """Pack a string record."""
         result = awg._pack_record("TEST_NAME", "hello\x00", "6s")
         name_size, data_size = struct.unpack_from("<II", result, 0)
@@ -330,7 +336,7 @@ class TestPackRecord:
         data_str = result[8 + name_size : 8 + name_size + data_size]
         assert data_str == b"hello\x00"
 
-    def test_pack_array_of_unsigned_shorts(self, awg) -> None:
+    def test_pack_array_of_unsigned_shorts(self, awg: TektronixAWG5014) -> None:
         """Pack a numpy array as unsigned 16-bit integers."""
         data = np.array([1, 2, 3], dtype=np.uint16)
         result = awg._pack_record("WF_DATA", data, "3H")
@@ -341,7 +347,7 @@ class TestPackRecord:
 # ── _file_dict ────────────────────────────────────────────────────────
 
 
-def test_file_dict(awg) -> None:
+def test_file_dict(awg: TektronixAWG5014) -> None:
     wf = np.array([0.0, 0.5, -0.5])
     m1 = np.array([0, 1, 0])
     m2 = np.array([1, 0, 1])
@@ -356,7 +362,7 @@ def test_file_dict(awg) -> None:
     assert result["numpoints"] == 3
 
 
-def test_file_dict_none_clock(awg) -> None:
+def test_file_dict_none_clock(awg: TektronixAWG5014) -> None:
     wf = np.array([0.0])
     m1 = np.array([0])
     m2 = np.array([0])
@@ -393,7 +399,7 @@ class TestParseMarkerChannelName:
 
 
 class TestMakeAwgFile:
-    def test_basic_awg_file(self, awg) -> None:
+    def test_basic_awg_file(self, awg: TektronixAWG5014) -> None:
         N = 25
         rng = np.random.default_rng(42)
         waveforms = [[rng.random(N) * 2 - 1]]
@@ -413,7 +419,7 @@ class TestMakeAwgFile:
         assert len(awgfile) > 0
         assert isinstance(awgfile, bytes)
 
-    def test_multi_segment_awg_file(self, awg) -> None:
+    def test_multi_segment_awg_file(self, awg: TektronixAWG5014) -> None:
         """File with two sequence elements on one channel."""
         N = 10
         rng = np.random.default_rng(123)
@@ -433,7 +439,7 @@ class TestMakeAwgFile:
         )
         assert len(awgfile) > 0
 
-    def test_multi_channel_awg_file(self, awg) -> None:
+    def test_multi_channel_awg_file(self, awg: TektronixAWG5014) -> None:
         """File with one element each on two channels."""
         N = 10
         rng = np.random.default_rng(456)
@@ -453,7 +459,7 @@ class TestMakeAwgFile:
         )
         assert len(awgfile) > 0
 
-    def test_specific_channels(self, awg) -> None:
+    def test_specific_channels(self, awg: TektronixAWG5014) -> None:
         """Using the channels parameter to target channels 2 and 4."""
         N = 10
         rng = np.random.default_rng(789)
@@ -474,7 +480,7 @@ class TestMakeAwgFile:
         )
         assert len(awgfile) > 0
 
-    def test_flat_input_format(self, awg) -> None:
+    def test_flat_input_format(self, awg: TektronixAWG5014) -> None:
         """make_awg_file also accepts flat (non-nested) waveform lists."""
         N = 10
         rng = np.random.default_rng(111)
@@ -499,11 +505,11 @@ class TestMakeAwgFile:
 
 
 class TestGenerateChannelCfg:
-    def test_returns_dict(self, awg) -> None:
+    def test_returns_dict(self, awg: TektronixAWG5014) -> None:
         cfg = awg.generate_channel_cfg()
         assert isinstance(cfg, dict)
 
-    def test_contains_settings_after_get(self, awg) -> None:
+    def test_contains_settings_after_get(self, awg: TektronixAWG5014) -> None:
         """After getting channel params, they should appear in the config."""
         ch1 = awg.channels[0]
         ch1.amp.get()
@@ -521,7 +527,7 @@ class TestGenerateChannelCfg:
 # ── generate_sequence_cfg ─────────────────────────────────────────────
 
 
-def test_generate_sequence_cfg(awg) -> None:
+def test_generate_sequence_cfg(awg: TektronixAWG5014) -> None:
     cfg = awg.generate_sequence_cfg()
     assert isinstance(cfg, dict)
     assert cfg["SAMPLING_RATE"] == 1e9
@@ -549,7 +555,7 @@ class TestLegacyChannelAttributes:
     )
     MARKER_PARAMS = (("del", "delay"), ("high", "high"), ("low", "low"))
 
-    def test_legacy_channel_param_exists(self, awg) -> None:
+    def test_legacy_channel_param_exists(self, awg: TektronixAWG5014) -> None:
         """All old ch{i}_{param} names resolve to the correct parameter."""
         for i in range(1, 5):
             for param in self.CHANNEL_PARAMS:
@@ -562,7 +568,7 @@ class TestLegacyChannelAttributes:
                     f"{old_name} did not resolve to ch{i}.{param}"
                 )
 
-    def test_legacy_marker_param_exists(self, awg) -> None:
+    def test_legacy_marker_param_exists(self, awg: TektronixAWG5014) -> None:
         """All old ch{i}_m{j}_{param} names resolve to the correct parameter."""
         for i in range(1, 5):
             for j in (1, 2):
@@ -578,27 +584,27 @@ class TestLegacyChannelAttributes:
                         f"{old_name} did not resolve to ch{i}.m{j}.{new_name}"
                     )
 
-    def test_legacy_channel_param_warns(self, awg) -> None:
+    def test_legacy_channel_param_warns(self, awg: TektronixAWG5014) -> None:
         """Accessing an old channel param name emits QCoDeSDeprecationWarning."""
         with pytest.warns(QCoDeSDeprecationWarning, match="ch1_amp.*ch1.amp"):
             _ = awg.ch1_amp
 
-    def test_legacy_marker_param_warns(self, awg) -> None:
+    def test_legacy_marker_param_warns(self, awg: TektronixAWG5014) -> None:
         """Accessing an old marker param name emits QCoDeSDeprecationWarning."""
         with pytest.warns(QCoDeSDeprecationWarning, match="ch2_m1_high.*ch2.m1.high"):
             _ = awg.ch2_m1_high
 
-    def test_legacy_marker_del_warns(self, awg) -> None:
+    def test_legacy_marker_del_warns(self, awg: TektronixAWG5014) -> None:
         """The renamed 'del' -> 'delay' param emits a correct warning."""
         with pytest.warns(QCoDeSDeprecationWarning, match="ch3_m2_del.*ch3.m2.delay"):
             _ = awg.ch3_m2_del
 
-    def test_nonexistent_attr_raises(self, awg) -> None:
+    def test_nonexistent_attr_raises(self, awg: TektronixAWG5014) -> None:
         """An attribute that doesn't match any legacy name still raises."""
         with pytest.raises(AttributeError, match="no_such_attr"):
             _ = awg.no_such_attr
 
-    def test_nonexistent_legacy_style_raises(self, awg) -> None:
+    def test_nonexistent_legacy_style_raises(self, awg: TektronixAWG5014) -> None:
         """A ch{i}_* name that doesn't map to a real param still raises."""
         with pytest.raises(AttributeError):
             _ = awg.ch1_bogus_param
