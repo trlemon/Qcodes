@@ -6,10 +6,17 @@ from typing import TYPE_CHECKING, Any
 
 from .delegate_parameter import DelegateParameter
 from .group_parameter import Group, GroupParameter
-from .parameter_base import ParamDataType, ParameterBase, ParamRawDataType
+from .parameter_base import (
+    ParamDataType,
+    ParameterBase,
+    ParameterBaseKWArgs,
+    ParamRawDataType,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
+
+    from typing_extensions import Unpack
 
     from qcodes.instrument import InstrumentBase
 
@@ -161,7 +168,8 @@ class GroupedParameter(ParameterBase):
         group: Group that contains the target parameter(s).
         unit: The unit of measure. Use ``''`` for unitless.
         label: Optional label, defaults to parameter name.
-        default set method(s).
+        **kwargs: Forwarded to the ``ParameterBase`` base class.
+            See :class:`ParameterBaseKWArgs` for details.
 
     """
 
@@ -172,7 +180,7 @@ class GroupedParameter(ParameterBase):
         group: DelegateGroup,
         unit: str | None = None,
         label: str | None = None,
-        **kwargs: Any,
+        **kwargs: Unpack[ParameterBaseKWArgs],
     ):
         super().__init__(name, **kwargs)
         self.label = name if label is None else label
