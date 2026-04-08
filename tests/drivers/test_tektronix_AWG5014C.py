@@ -388,6 +388,9 @@ def test_file_dict(awg: TektronixAWG5014) -> None:
 
     result = awg._file_dict(wf, m1, m2, clock)
 
+    assert result["w"] is not None
+    assert result["m1"] is not None
+    assert result["m2"] is not None
     assert np.array_equal(result["w"], wf)
     assert np.array_equal(result["m1"], m1)
     assert np.array_equal(result["m2"], m2)
