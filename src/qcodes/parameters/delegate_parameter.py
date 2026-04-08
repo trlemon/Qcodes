@@ -4,12 +4,14 @@ from typing import TYPE_CHECKING, Any, Generic
 
 from typing_extensions import TypeVar
 
-from .parameter import Parameter
+from .parameter import Parameter, ParameterKWArgs
 from .parameter_base import InstrumentTypeVar_co, ParameterDataTypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import datetime
+
+    from typing_extensions import Unpack
 
     from qcodes.instrument import InstrumentBase
     from qcodes.validators.validators import Validator
@@ -178,10 +180,9 @@ class DelegateParameter(
         name: str,
         *,
         source: Parameter | None,
-        **kwargs: Any,
+        **kwargs: Unpack[ParameterKWArgs[ParameterDataTypeVar, InstrumentTypeVar_co]],
     ):
-        if "bind_to_instrument" not in kwargs.keys():
-            kwargs["bind_to_instrument"] = False
+        kwargs.setdefault("bind_to_instrument", False)
 
         for cmd in ("set_cmd", "get_cmd"):
             if cmd in kwargs:
@@ -199,7 +200,7 @@ class DelegateParameter(
                 "without a source."
             )
 
-        initial_cache_value = kwargs.pop("initial_cache_value", None)
+        initial_cache_value = kwargs.get("initial_cache_value")
         self.source = source
         super().__init__(name, **kwargs)
         self.label = kwargs.get("label", None)

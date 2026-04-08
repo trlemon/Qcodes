@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
     from typing_extensions import Unpack
 
-    from qcodes.instrument import InstrumentBase
     from qcodes.logger.instrument_logger import InstrumentLoggerAdapter
     from qcodes.parameters import ParamSpecBase
 
@@ -469,20 +468,22 @@ class ManualParameter(Parameter):
     def __init__(
         self,
         name: str,
-        instrument: InstrumentBase | None = None,
-        initial_value: Any = None,
-        **kwargs: Any,
+        **kwargs: Unpack[ParameterKWArgs],
     ):
         """
         A simple alias for a parameter that does not have a set or
         a get function. Useful for parameters that do not have a direct
         instrument mapping.
+
+        Args:
+            name: The local name of the parameter.
+            **kwargs: Forwarded to the ``Parameter`` base class.
+                See :class:`ParameterKWArgs` for details.
+
         """
+        kwargs["get_cmd"] = None
+        kwargs["set_cmd"] = None
         super().__init__(
             name=name,
-            instrument=instrument,
-            get_cmd=None,
-            set_cmd=None,
-            initial_value=initial_value,
             **kwargs,
         )

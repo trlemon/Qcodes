@@ -18,9 +18,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Unpack
 
-    from qcodes.instrument import InstrumentBase
-
-    from .parameter import Parameter
+    from .parameter import Parameter, ParameterKWArgs
 
 
 _log = logging.getLogger(__name__)
@@ -31,15 +29,11 @@ class DelegateGroupParameter(DelegateParameter, GroupParameter):
         self,
         name: str,
         source: Parameter | None,
-        instrument: InstrumentBase | None = None,
-        initial_value: float | str | None = None,
-        **kwargs: Any,
+        **kwargs: Unpack[ParameterKWArgs],
     ) -> None:
         super().__init__(
             name=name,
             source=source,
-            instrument=instrument,
-            initial_value=initial_value,
             **kwargs,
         )
 
