@@ -81,6 +81,7 @@ from .parameter import ManualParameter, Parameter
 from .parameter_base import (
     ParamDataType,
     ParameterBase,
+    ParameterBaseKWArgs,
     ParameterSet,
     ParamRawDataType,
     invert_val_mapping,
@@ -112,6 +113,7 @@ __all__ = [
     "ParamSpecBaseDict",
     "Parameter",
     "ParameterBase",
+    "ParameterBaseKWArgs",
     "ParameterSet",
     "ParameterWithSetpoints",
     "ScaledParameter",
