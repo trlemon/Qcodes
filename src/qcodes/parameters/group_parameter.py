@@ -42,6 +42,8 @@ class GroupParameter(Parameter):
         **kwargs: Forwarded to the ``Parameter`` base class.
             See :class:`ParameterKWArgs` for details.
             Note that ``set_cmd`` and ``get_cmd`` are not allowed.
+            ``initial_value``, if provided, is deferred until the
+            parameter is added to a :class:`.Group`.
 
     """
 

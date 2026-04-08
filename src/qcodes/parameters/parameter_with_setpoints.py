@@ -44,6 +44,11 @@ class ParameterWithSetpoints(
 
     In all other ways this is identical to  :class:`Parameter`. See the
     documentation of :class:`Parameter` for more details.
+
+    Note:
+        ``snapshot_get`` and ``snapshot_value`` default to ``False``
+        (unlike :class:`Parameter` where they default to ``True``).
+
     """
 
     def __init__(

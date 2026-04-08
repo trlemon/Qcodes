@@ -32,6 +32,7 @@ class ElapsedTimeParameter(Parameter):
             See :class:`ParameterKWArgs` for details.
             Note that ``unit``, ``get_cmd``, and ``set_cmd`` are not allowed
             since ElapsedTimeParameter hardcodes these.
+            ``label`` defaults to ``"Elapsed time"`` if not provided.
 
     Raises:
         ValueError: If ``unit``, ``get_cmd``, or ``set_cmd`` is provided.
@@ -77,6 +78,8 @@ class InstrumentRefParameter(Parameter):
             See :class:`ParameterKWArgs` for details.
             Note that ``set_cmd`` is not allowed since
             InstrumentRefParameter uses manual set (``set_cmd=None``).
+            ``vals`` defaults to :class:`~qcodes.validators.Strings`
+            if not provided.
 
     Raises:
         RuntimeError: If ``set_cmd`` is provided with a non-None value.
