@@ -12,6 +12,7 @@ from .command import Command
 from .parameter_base import (
     InstrumentTypeVar_co,
     ParameterBase,
+    ParameterBaseKWArgs,
     ParameterDataTypeVar,
     ParamRawDataType,
 )
@@ -20,10 +21,11 @@ from .sweep_values import SweepFixedValues
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from typing_extensions import Unpack
+
     from qcodes.instrument import InstrumentBase
     from qcodes.logger.instrument_logger import InstrumentLoggerAdapter
     from qcodes.parameters import ParamSpecBase
-    from qcodes.validators import Validator
 
 
 log = logging.getLogger(__name__)
@@ -88,69 +90,32 @@ class Parameter(
 
         unit: The unit of measure. Use ``''`` for unitless.
 
-        snapshot_get: ``False`` prevents any update to the
-            parameter during a snapshot, even if the snapshot was called with
-            ``update=True``, for example, if it takes too long to update,
-            or if the parameter is only meant for measurements hence calling
-            get on it during snapshot may be an error. Default True.
+        get_cmd: A command to issue to the instrument to retrieve the
+            value of this parameter. Can be a callable with zero args,
+            a VISA command string, ``None`` to use ``get_raw``, or
+            ``False`` to disable getting.
 
-        snapshot_value: ``False`` prevents parameter value to be
-            stored in the snapshot. Useful if the value is large.
+        set_cmd: A command to issue to the instrument to set the
+            value of this parameter. Can be a callable with one arg,
+            a VISA command string, ``None`` to use ``set_raw``, or
+            ``False`` to disable setting. Default ``False``.
 
-        snapshot_exclude: ``True`` prevents parameter to be
-            included in the snapshot. Useful if there are many of the same
-            parameter which are clogging up the snapshot.
-            Default ``False``.
-
-        step: Max increment of parameter value.
-            Larger changes are broken into multiple steps this size.
-            When combined with delays, this acts as a ramp.
-
-        scale: Scale to multiply value with before
-            performing set. the internally multiplied value is stored in
-            ``cache.raw_value``. Can account for a voltage divider.
-
-        inter_delay: Minimum time (in seconds)
-            between successive sets. If the previous set was less than this,
-            it will wait until the condition is met.
-            Can be set to 0 to go maximum speed with no errors.
-
-        post_delay: Time (in seconds) to wait
-            after the *start* of each set, whether part of a sweep or not.
-            Can be set to 0 to go maximum speed with no errors.
-
-        val_mapping: A bi-directional map data/readable values
-            to instrument codes, expressed as a dict:
-            ``{data_val: instrument_code}``
-            For example, if the instrument uses '0' to mean 1V and '1' to mean
-            10V, set val_mapping={1: '0', 10: '1'} and on the user side you
-            only see 1 and 10, never the coded '0' and '1'
-            If vals is omitted, will also construct a matching Enum validator.
-            **NOTE** only applies to get if get_cmd is a string, and to set if
-            set_cmd is a string.
-            You can use ``val_mapping`` with ``get_parser``, in which case
-            ``get_parser`` acts on the return value from the instrument first,
-            then ``val_mapping`` is applied (in reverse).
-
-        get_parser: Function to transform the response
-            from get to the final output value. See also `val_mapping`.
-
-        set_parser: Function to transform the input set
-            value to an encoded value sent to the instrument.
-            See also `val_mapping`.
-
-        vals: Allowed values for setting this parameter.
-            Only relevant if settable. Defaults to ``Numbers()``.
+        initial_value: Value to set the parameter to at the end of its
+            initialization (this is equivalent to calling
+            ``parameter.set(initial_value)`` after parameter initialization).
+            Cannot be passed together with ``initial_cache_value`` argument.
 
         max_val_age: The max time (in seconds) to trust a
             saved value obtained from ``cache()`` (or ``cache.get()``, or
             ``get_latest()``. If this parameter has not been set or measured
             more recently than this, perform an additional measurement.
 
-        initial_value: Value to set the parameter to at the end of its
-            initialization (this is equivalent to calling
-            ``parameter.set(initial_value)`` after parameter initialization).
-            Cannot be passed together with ``initial_cache_value`` argument.
+        vals: Allowed values for setting this parameter.
+            Only relevant if settable. Defaults to ``Numbers()``.
+
+        docstring: Documentation string for the ``__doc__``
+            field of the object. The ``__doc__``  field of the instance is
+            used by some help systems, but not all.
 
         initial_cache_value: Value to set the cache of the parameter to
             at the end of its initialization (this is equivalent to calling
@@ -158,22 +123,11 @@ class Parameter(
             initialization). Cannot be passed together with ``initial_value``
             argument.
 
-        docstring: Documentation string for the ``__doc__``
-            field of the object. The ``__doc__``  field of the instance is
-            used by some help systems, but not all.
+        bind_to_instrument: Should the parameter be registered as a delegate
+            attribute on the instrument passed via the instrument argument.
 
-        metadata: Extra information to include with the
-            JSON snapshot of the parameter.
-
-        abstract: Specifies if this parameter is abstract or not. Default
-            is False. If the parameter is 'abstract', it *must* be overridden
-            by a non-abstract parameter before the instrument containing
-            this parameter can be instantiated. We override a parameter by
-            adding one with the same name and unit. An abstract parameter
-            can be added in a base class and overridden in a subclass.
-
-        bind_to_instrument: Should the parameter be registered as a delegate attribute
-            on the instrument passed via the instrument argument.
+        **kwargs: Forwarded to the ``ParameterBase`` base class.
+            See :class:`ParameterBaseKWArgs` for details.
 
     """
 
@@ -181,20 +135,16 @@ class Parameter(
         self,
         name: str,
         *,
-        # mypy seems to be confused here. The bound and default for InstrumentTypeVar_co
-        # contains None but mypy will not allow None as a default as of v 1.19.0
-        instrument: InstrumentTypeVar_co = None,  # type: ignore[assignment]
         label: str | None = None,
         unit: str | None = None,
         get_cmd: str | Callable[..., Any] | Literal[False] | None = None,
         set_cmd: str | Callable[..., Any] | Literal[False] | None = False,
         initial_value: ParameterDataTypeVar | None = None,
-        max_val_age: float | None = None,
-        vals: Validator[Any] | None = None,
         docstring: str | None = None,
         initial_cache_value: ParameterDataTypeVar | None = None,
-        bind_to_instrument: bool = True,
-        **kwargs: Any,
+        **kwargs: Unpack[
+            ParameterBaseKWArgs[ParameterDataTypeVar, InstrumentTypeVar_co]
+        ],
     ) -> None:
         def _get_manual_parameter(self: Parameter) -> ParamRawDataType:
             if self.root_instrument is not None:
@@ -219,6 +169,10 @@ class Parameter(
             )
             self.cache._set_from_raw_value(x)
             return x
+
+        instrument = kwargs.get("instrument")
+        bind_to_instrument = kwargs.get("bind_to_instrument", True)
+        max_val_age = kwargs.get("max_val_age")
 
         if instrument is not None and bind_to_instrument:
             existing_parameter = instrument.parameters.get(name, None)
@@ -245,10 +199,6 @@ class Parameter(
 
         super().__init__(
             name=name,
-            instrument=instrument,
-            vals=vals,
-            max_val_age=max_val_age,
-            bind_to_instrument=bind_to_instrument,
             **kwargs,
         )
 
