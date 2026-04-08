@@ -20,6 +20,7 @@ from .sweep_values import SweepFixedValues
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import NotRequired
 
     from typing_extensions import Unpack
 
@@ -29,6 +30,61 @@ if TYPE_CHECKING:
 
 
 log = logging.getLogger(__name__)
+
+
+class ParameterKWArgs(
+    ParameterBaseKWArgs[ParameterDataTypeVar, InstrumentTypeVar_co],
+    Generic[ParameterDataTypeVar, InstrumentTypeVar_co],
+):
+    """
+    This TypedDict defines the type of the kwargs that can be passed to
+    the ``Parameter`` class.
+
+    A subclass of ``Parameter`` should take
+    ``**kwargs: Unpack[ParameterKWArgs]`` as input and forward this to
+    the super class to ensure that it can accept all the arguments
+    defined here.
+    """
+
+    label: NotRequired[str | None]
+    """
+    Normally used as the axis label when this parameter is graphed,
+    along with ``unit``.
+    """
+    unit: NotRequired[str | None]
+    """
+    The unit of measure. Use ``''`` for unitless.
+    """
+    get_cmd: NotRequired[str | Callable[..., Any] | Literal[False] | None]
+    """
+    A command to issue to the instrument to retrieve the value of this
+    parameter. Can be a callable with zero args, a VISA command string,
+    ``None`` to use ``get_raw``, or ``False`` to disable getting.
+    """
+    set_cmd: NotRequired[str | Callable[..., Any] | Literal[False] | None]
+    """
+    A command to issue to the instrument to set the value of this
+    parameter. Can be a callable with one arg, a VISA command string,
+    ``None`` to use ``set_raw``, or ``False`` to disable setting.
+    Default ``False``.
+    """
+    initial_value: NotRequired[ParameterDataTypeVar | None]
+    """
+    Value to set the parameter to at the end of its initialization
+    (this is equivalent to calling ``parameter.set(initial_value)``
+    after parameter initialization). Cannot be passed together with
+    ``initial_cache_value`` argument.
+    """
+    docstring: NotRequired[str | None]
+    """
+    Documentation string for the ``__doc__`` field of the object.
+    """
+    initial_cache_value: NotRequired[ParameterDataTypeVar | None]
+    """
+    Value to set the cache of the parameter to at the end of its
+    initialization. Cannot be passed together with ``initial_value``
+    argument.
+    """
 
 
 class Parameter(
