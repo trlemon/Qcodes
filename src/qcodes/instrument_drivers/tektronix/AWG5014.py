@@ -645,9 +645,7 @@ class TektronixAWG5014(VisaInstrument):
                         stacklevel=2,
                     )
                     return getattr(ch, param)
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
-        )
+        return super().__getattr__(name)
 
     # Convenience parser
     def newlinestripper(self, string: str) -> str:
@@ -1183,7 +1181,12 @@ class TektronixAWG5014(VisaInstrument):
             None: None,
         }
 
-        addinptrans = {'"ESIG"': 1, '""': 0, None: None}
+        addinptrans: dict[str | None, int | None] = {
+            '"ESIG"': 1,
+            '"ESIGnal"': 1,
+            '""': 0,
+            None: None,
+        }
 
         def mrkdeltrans(x: float | None) -> float | None:
             if x is None:
