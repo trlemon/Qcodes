@@ -140,7 +140,7 @@ def test_get_set_raises(simple_param: Parameter) -> None:
     """
     for kwargs in ({"set_cmd": None}, {"get_cmd": None}):
         with pytest.raises(KeyError) as e:
-            DelegateParameter("test_delegate_parameter", source=simple_param, **kwargs)
+            DelegateParameter("test_delegate_parameter", source=simple_param, **kwargs)  # type: ignore[arg-type]
         assert str(e.value).startswith("'It is not allowed to set")
 
 
