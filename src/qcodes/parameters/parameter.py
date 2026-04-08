@@ -479,8 +479,19 @@ class ManualParameter(Parameter):
             name: The local name of the parameter.
             **kwargs: Forwarded to the ``Parameter`` base class.
                 See :class:`ParameterKWArgs` for details.
+                Note that ``get_cmd`` and ``set_cmd`` are not allowed
+                since ManualParameter hardcodes these to ``None``.
+
+        Raises:
+            ValueError: If ``get_cmd`` or ``set_cmd`` is provided.
 
         """
+        forbidden_kwargs = ("get_cmd", "set_cmd")
+        for fk in forbidden_kwargs:
+            if fk in kwargs:
+                raise ValueError(
+                    f'It is not allowed to set "{fk}" for a ManualParameter.'
+                )
         kwargs["get_cmd"] = None
         kwargs["set_cmd"] = None
         super().__init__(

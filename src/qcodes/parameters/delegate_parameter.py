@@ -72,6 +72,10 @@ class DelegateParameter(
         You should pass ``bind_to_instrument=True`` if you want this to
         be the case.
 
+        ``set_cmd`` and ``get_cmd`` are not allowed since the source
+        parameter's commands are used. Providing ``initial_value`` or
+        ``initial_cache_value`` without a source is also an error.
+
     """
 
     class _DelegateCache(

@@ -28,6 +28,13 @@ class ElapsedTimeParameter(Parameter):
     Args:
         name: The local name of the parameter. See the documentation of
             :class:`qcodes.parameters.Parameter` for more details.
+        **kwargs: Forwarded to the ``Parameter`` base class.
+            See :class:`ParameterKWArgs` for details.
+            Note that ``unit``, ``get_cmd``, and ``set_cmd`` are not allowed
+            since ElapsedTimeParameter hardcodes these.
+
+    Raises:
+        ValueError: If ``unit``, ``get_cmd``, or ``set_cmd`` is provided.
 
     """
 
@@ -68,6 +75,11 @@ class InstrumentRefParameter(Parameter):
         name: The name of the parameter that one wants to add.
         **kwargs: Forwarded to the ``Parameter`` base class.
             See :class:`ParameterKWArgs` for details.
+            Note that ``set_cmd`` is not allowed since
+            InstrumentRefParameter uses manual set (``set_cmd=None``).
+
+    Raises:
+        RuntimeError: If ``set_cmd`` is provided with a non-None value.
 
     """
 
