@@ -204,7 +204,7 @@ class DelegateParameter(
                 "without a source."
             )
 
-        initial_cache_value = kwargs.get("initial_cache_value")
+        initial_cache_value = kwargs.pop("initial_cache_value", None)
         self.source = source
         super().__init__(name, **kwargs)
         self.label = kwargs.get("label", None)
