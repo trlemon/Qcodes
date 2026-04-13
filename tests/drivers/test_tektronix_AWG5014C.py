@@ -580,8 +580,8 @@ def test_generate_sequence_cfg(awg: TektronixAWG5014) -> None:
 # ── Legacy attribute backward compatibility ───────────────────────────
 
 
-"""Tests that the old flat ch{i}_* attribute names still work
-but emit a QCoDeSDeprecationWarning."""
+# Tests that the old flat ch{i}_* attribute names still work
+# but emit a QCoDeSDeprecationWarning.
 
 CHANNEL_PARAMS = (
     "state",
