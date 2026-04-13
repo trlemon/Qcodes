@@ -28,8 +28,14 @@ def setup_dmm(dmm: Instrument) -> None:
 
 def save_calibration(smu: Keithley26xx) -> None:
     calibration_date = int(time.time())
+    one_year_in_seconds = 31536000
+
     for smu_channel in smu.channels:
         smu.write(f"{smu_channel.channel}.cal.adjustdate = {calibration_date}")
+        smu.write(f"{smu_channel.channel}.cal.date = {calibration_date}")
+        smu.write(
+            f"{smu_channel.channel}.cal.due = {calibration_date + one_year_in_seconds}"
+        )
         smu.write(f"{smu_channel.channel}.cal.save()")
 
 
