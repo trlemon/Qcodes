@@ -155,6 +155,7 @@ class OxfordMercuryWorkerPS(InstrumentChannel["OxfordMercuryiPS"]):
             "current_target",
             label="Target current",
             get_cmd=partial(self._param_getter, "SIG:CSET"),
+            set_cmd=partial(self._param_setter, "SIG:CSET"),
             unit="A",
             get_parser=partial(_signal_parser, 1),
         )
@@ -177,7 +178,9 @@ class OxfordMercuryWorkerPS(InstrumentChannel["OxfordMercuryiPS"]):
             label="Ramp rate (current)",
             unit="A/s",
             get_cmd=partial(self._param_getter, "SIG:RCST"),
+            set_cmd=partial(self._param_setter, "SIG:RCST"),
             get_parser=partial(_signal_parser, 1 / 60),
+            set_parser=lambda x: x * 60,
         )
         """Parameter current_ramp_rate"""
 
