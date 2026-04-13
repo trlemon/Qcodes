@@ -719,10 +719,13 @@ class YokogawaGS200(VisaInstrument):
         """Set whether :attr:`current`/:attr:`voltage` jump to the given
         value or ramp at speed :attr:`ramp_rate`.
 
-        JUMP corresponds to no ramp (instantaneous jump to the new output level).
-        HARDWARE corresponds to a program with a single step.
-        SOFTWARE corresponds to a ramp implemented using the parameter
-            attributes :attr:`Parameter.step` and :attr:`Parameter.inter_delay`.
+         - ``"JUMP"`` corresponds to no ramp (instantaneous jump to the
+           new output level).
+         - ``"HARDWARE"`` corresponds to a program with a single step.
+         - ``"SOFTWARE"`` corresponds to a ramp implemented using the
+           parameter attributes :attr:`Parameter.step` and
+           :attr:`Parameter.inter_delay`.
+
         """
 
         self.ramp_blocking: ManualParameter = self.add_parameter(
@@ -742,7 +745,7 @@ class YokogawaGS200(VisaInstrument):
             vals=Numbers(1e-3 / 3600, float("inf")),
             initial_value=10e-3 if self.source_mode() == "VOLT" else 100e-6,
         )
-        """The ramp rate when :attr:`ramp_mode` is not "JUMP"."""
+        """The ramp rate when :attr:`ramp_mode` is not ``"JUMP"``."""
 
         self.ramp_step: ManualParameter = self.add_parameter(
             "ramp_step",
@@ -752,9 +755,9 @@ class YokogawaGS200(VisaInstrument):
             vals=Numbers(0, float("inf")),
             initial_value=0,
         )
-        """The ramp step when :attr:`ramp_mode` is set to "SOFTWARE".
+        """The ramp step when :attr:`ramp_mode` is set to ``"SOFTWARE"``.
 
-        When :attr:`ramp_mode` is "HARDWARE", defines the output delta
+        When :attr:`ramp_mode` is ``"HARDWARE"``, defines the output delta
         above which a ramp is used. If the delta is below this value,
         the output is "jumped".
         """
@@ -868,9 +871,6 @@ class YokogawaGS200(VisaInstrument):
 
         Args:
             ramp_to: The ramp target in volts/amps
-            step: The ramp steps in volts/ampere
-            delay: The time between finishing one step and
-                starting another in seconds.
 
         """
         match self.ramp_mode():
