@@ -19,14 +19,13 @@ from .parameter_base import (
 from .sweep_values import SweepFixedValues
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping
+    from collections.abc import Callable
     from typing import NotRequired
 
     from typing_extensions import Unpack
 
     from qcodes.logger.instrument_logger import InstrumentLoggerAdapter
     from qcodes.parameters import ParamSpecBase
-    from qcodes.validators import Validator
 
 
 log = logging.getLogger(__name__)
@@ -46,115 +45,6 @@ class ParameterKWArgs(
     defined here.
     """
 
-    # Members inherited from ParameterBaseKWArgs are redeclared here
-    # so that Sphinx can discover and document them.
-    instrument: NotRequired[InstrumentTypeVar_co]
-    """
-    The instrument this parameter belongs to, if any.
-    """
-    snapshot_get: NotRequired[bool]
-    """
-    False prevents any update to the parameter during a snapshot,
-    even if the snapshot was called with ``update=True``.
-    Default True.
-    """
-    metadata: NotRequired[Mapping[Any, Any] | None]
-    """
-    Additional static metadata to add to this
-    parameter's JSON snapshot.
-    """
-    step: NotRequired[float | None]
-    """
-    Max increment of parameter value.
-    Larger changes are broken into multiple steps this size.
-    When combined with delays, this acts as a ramp.
-    """
-    scale: NotRequired[float | Iterable[float] | None]
-    """
-    Scale to multiply value with before performing set.
-    The internally multiplied value is stored in
-    ``cache.raw_value``. Can account for a voltage divider.
-    """
-    offset: NotRequired[float | Iterable[float] | None]
-    """
-    Compensate for a parameter specific offset.
-    get value = raw value - offset.
-    set value = argument + offset.
-    """
-    inter_delay: NotRequired[float]
-    """
-    Minimum time (in seconds) between successive sets.
-    If the previous set was less than this, it will wait until the
-    condition is met. Can be set to 0 to go maximum speed with
-    no errors.
-    """
-    post_delay: NotRequired[float]
-    """
-    Time (in seconds) to wait after the *start* of each set,
-    whether part of a sweep or not. Can be set to 0 to go maximum
-    speed with no errors.
-    """
-    val_mapping: NotRequired[Mapping[Any, Any] | None]
-    """
-    A bidirectional map of data/readable values to instrument codes,
-    expressed as a dict: ``{data_val: instrument_code}``.
-    """
-    get_parser: NotRequired[Callable[..., Any] | None]
-    """
-    Function to transform the response from get to the final
-    output value. See also ``val_mapping``.
-    """
-    set_parser: NotRequired[Callable[..., Any] | None]
-    """
-    Function to transform the input set value to an encoded
-    value sent to the instrument. See also ``val_mapping``.
-    """
-    snapshot_value: NotRequired[bool]
-    """
-    False prevents parameter value to be stored in the snapshot.
-    Useful if the value is large. Default True.
-    """
-    snapshot_exclude: NotRequired[bool]
-    """
-    True prevents parameter to be included in the snapshot.
-    Useful if there are many of the same parameter which are
-    clogging up the snapshot. Default False.
-    """
-    max_val_age: NotRequired[float | None]
-    """
-    The max time (in seconds) to trust a saved value obtained
-    from ``cache.get`` (or ``get_latest``). If this parameter has not
-    been set or measured more recently than this, perform an
-    additional measurement.
-    """
-    vals: NotRequired[Validator[Any] | None]
-    """
-    A Validator object for this parameter.
-    """
-    abstract: NotRequired[bool | None]
-    """
-    Specifies if this parameter is abstract or not. Default is False.
-    If the parameter is 'abstract', it *must* be overridden by a
-    non-abstract parameter before the instrument containing this
-    parameter can be instantiated.
-    """
-    bind_to_instrument: NotRequired[bool]
-    """
-    Should the parameter be registered as a delegate attribute
-    on the instrument passed via the instrument argument.
-    """
-    register_name: NotRequired[str | None]
-    """
-    Specifies if the parameter should be registered in datasets
-    using a different name than the parameter's ``full_name``.
-    """
-    on_set_callback: NotRequired[
-        Callable[[ParameterBase, ParameterDataTypeVar], None] | None
-    ]
-    """
-    Callback called when the parameter value is set.
-    """
-    # Members specific to ParameterKWArgs
     label: NotRequired[str | None]
     """
     Normally used as the axis label when this parameter is graphed,
