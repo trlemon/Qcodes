@@ -249,9 +249,6 @@ class Parameter(
             referenced from that parent, ie ``instrument.name`` or
             ``instrument.parameters[name]``.
 
-        instrument: The instrument this parameter
-            belongs to, if any.
-
         label: Normally used as the axis label when this
             parameter is graphed, along with ``unit``.
 
@@ -272,14 +269,6 @@ class Parameter(
             ``parameter.set(initial_value)`` after parameter initialization).
             Cannot be passed together with ``initial_cache_value`` argument.
 
-        max_val_age: The max time (in seconds) to trust a
-            saved value obtained from ``cache()`` (or ``cache.get()``, or
-            ``get_latest()``. If this parameter has not been set or measured
-            more recently than this, perform an additional measurement.
-
-        vals: Allowed values for setting this parameter.
-            Only relevant if settable. Defaults to ``Numbers()``.
-
         docstring: Documentation string for the ``__doc__``
             field of the object. The ``__doc__``  field of the instance is
             used by some help systems, but not all.
@@ -289,9 +278,6 @@ class Parameter(
             ``parameter.cache.set(initial_cache_value)`` after parameter
             initialization). Cannot be passed together with ``initial_value``
             argument.
-
-        bind_to_instrument: Should the parameter be registered as a delegate
-            attribute on the instrument passed via the instrument argument.
 
         **kwargs: Forwarded to the ``ParameterBase`` base class.
             See :class:`ParameterBaseKWArgs` for details.
