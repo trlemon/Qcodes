@@ -2,7 +2,7 @@ import textwrap
 from bisect import bisect_left
 from contextlib import ExitStack
 from functools import partial
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -1269,14 +1269,14 @@ mode."""
         # resolution settings change with range
         self.resolution.get()
 
-    def _set_resolution(self, value: float) -> None:
+    def _set_resolution(self, value: float | NumericScpiMnemonic) -> None:
         rang = self.range.get()
 
         # convert both value*range and the resolution factors
         # to strings with few digits, so we avoid floating point
         # rounding errors.
-        if value in ("MIN", "MAX", "DEF"):
-            str_value = value
+        if value in get_args(NumericScpiMnemonic):
+            str_value = str(value)  # already str, but mypy does not know this
         else:
             res_fac_strs = [f"{(v * rang):.1e}" for v in self._resolution_factors]
             str_value = f"{value:.1e}"
