@@ -1,7 +1,7 @@
 import time
 import warnings
+from enum import IntFlag
 from functools import partial
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Literal, Self, cast
 
 from qcodes.instrument import (
@@ -46,117 +46,102 @@ def _float_round(val: float) -> int:
     return round(float(val))
 
 
-class Register(int):
-    """A bit register.
-
-    This status report format is an extended version of the status
-    report format defined in IEEE 488.2-1992.
-    """
-
-    _bits: MappingProxyType[tuple[int, str], str]
-
-    def _is_bit_set(self, bit: int) -> bool:
-        return bool((1 << bit) & self)
-
-    def __repr__(self) -> str:
-        return (
-            f"{type(self).__name__}("
-            + ", ".join((f"{name}={getattr(self, name)}" for _, name in self._bits))
-            + ")"
-        )
-
-    def __init_subclass__(cls) -> None:
-        """Automatically sets properties based on _bits."""
-        super().__init_subclass__()
-        for (i, name), doc in cls._bits.items():
-            setattr(cls, name, property(partial(cls._is_bit_set, bit=i), doc=doc))
-
-
-class StatusByte(Register):
+class StatusByte(IntFlag):
     """Status byte.
 
     Read: Serial polling (RQS), *STB? (MSS).
     """
 
-    _bits = MappingProxyType(
-        {
-            (1, "EES"): "Extended Event Summary Bit",
-            (2, "EAV"): "Error Available",
-            (4, "MAV"): "Message Available",
-            (5, "ESB"): "Event Summary Bit",
-            (6, "RQS"): "Request Service/Master Status Summary",
-        }
-    )
+    EES = 1 << 1
+    """Extended Event Summary Bit"""
+    EAV = 1 << 2
+    """Error available"""
+    MAV = 1 << 4
+    """Message available"""
+    ESB = 1 << 5
+    """Event Summary Bit"""
+    RQS = 1 << 6
+    """Request Service/Master Status Summary"""
 
 
-class StandardEventRegister(Register):
+class StandardEventRegister(IntFlag):
     """Standard event register.
 
-    Indicates device status changes.
-
-    READ: *ESR?
+    Indicates device status changes. READ: *ESR?
     """
 
-    _bits = MappingProxyType(
-        {
-            (0, "OPC"): "Operation Complete",
-            (2, "QYE"): "Query Error",
-            (3, "DDE"): "Device Error",
-            (4, "EXE"): "Execution Error",
-            (5, "CME"): "Command Error",
-            (7, "PON"): "Power on",
-        }
-    )
+    OPC = 1 << 0
+    """Operation Complete"""
+    QYE = 1 << 2
+    """Query Error"""
+    DDE = 1 << 3
+    """Device Error"""
+    EXE = 1 << 4
+    """Execution Error"""
+    CME = 1 << 5
+    """Command Error"""
+    PON = 1 << 7
+    """Power on"""
 
 
-class ConditionRegister(Register):
+class ConditionRegister(IntFlag):
     """Condition register.
 
-    Current device status.
-
-    READ: :STATus:CONDition?
+    Current device status. READ: :STATus:CONDition?
     """
 
-    _bits = MappingProxyType(
-        {
-            (0, "EOM"): "End of Measure",
-            (1, "OVR"): "Over Range",
-            (2, "EOT"): "End of Trace",
-            (3, "ECF"): "End of Create File",
-            (4, "TSE"): "Trigger Sampling Error",
-            (8, "RFP"): "Ready for Program",
-            (10, "LLO"): "Low Limiting",
-            (11, "LHI"): "High Limiting",
-            (13, "EMR"): "Emergency",
-        }
-    )
+    EOM = 1 << 0
+    """End of Measure"""
+    OVR = 1 << 1
+    """Over Range"""
+    EOT = 1 << 2
+    """End of Trace"""
+    ECF = 1 << 3
+    """End of Create File"""
+    TSE = 1 << 4
+    """Trigger Sampling Error"""
+    RFP = 1 << 8
+    """Ready for Program"""
+    LLO = 1 << 10
+    """Low Limiting"""
+    LHI = 1 << 11
+    """High Limiting"""
+    EMR = 1 << 13
+    """Emergency"""
 
 
-class ExtendedEventRegister(Register):
+class ExtendedEventRegister(IntFlag):
     """Extended event register.
 
-    Indicates device status changes.
-
-    READ: :STATus:EVENt?
+    Indicates device status changes. READ: :STATus:EVENt?
     """
 
-    _bits = MappingProxyType(
-        {
-            (0, "EOM"): "End of Measure",
-            (1, "OVR"): "Over Range",
-            (2, "EOT"): "End of Trace",
-            (3, "ECF"): "End of Create File",
-            (4, "TSE"): "Trigger Sampling Error",
-            (5, "SCG"): "Source Change",
-            (6, "EOS"): "End of Program Step",
-            (7, "EOP"): "End of Program",
-            (8, "RFP"): "Ready for Program",
-            (10, "LLO"): "Low Limiting",
-            (11, "LHI"): "High Limiting",
-            (12, "TRP"): "Tripped",
-            (13, "EMR"): "Emergency",
-        }
-    )
+    EOM = 1 << 0
+    """End of Measure"""
+    OVR = 1 << 1
+    """Over Range"""
+    EOT = 1 << 2
+    """End of Trace"""
+    ECF = 1 << 3
+    """End of Create File"""
+    TSE = 1 << 4
+    """Trigger Sampling Error"""
+    SCG = 1 << 5
+    """Source Change"""
+    EOS = 1 << 6
+    """End of Program Step"""
+    EOP = 1 << 7
+    """End of Program"""
+    RFP = 1 << 8
+    """Ready for Program"""
+    LLO = 1 << 10
+    """Low Limiting"""
+    LHI = 1 << 11
+    """High Limiting"""
+    TRP = 1 << 12
+    """Tripped"""
+    EMR = 1 << 13
+    """Emergency"""
 
 
 class YokogawaGS200Exception(Exception):
@@ -680,7 +665,7 @@ class YokogawaGS200(VisaInstrument):
         self.status_byte: Parameter = self.add_parameter(
             "status_byte",
             get_cmd="*STB?",
-            get_parser=StatusByte,
+            get_parser=lambda x: StatusByte(int(x)),
             label="Status Byte",
         )
         """Query the instrument status byte."""
@@ -688,7 +673,7 @@ class YokogawaGS200(VisaInstrument):
         self.standard_event_register: Parameter = self.add_parameter(
             "standard_event_register",
             get_cmd="*ESR?",
-            get_parser=StandardEventRegister,
+            get_parser=lambda x: StandardEventRegister(int(x)),
             label="Standard Event Register",
         )
         """Query the instrument standard event register."""
@@ -696,7 +681,7 @@ class YokogawaGS200(VisaInstrument):
         self.extended_event_register: Parameter = self.add_parameter(
             "extended_event_register",
             get_cmd=":STAT:EVEN?",
-            get_parser=ExtendedEventRegister,
+            get_parser=lambda x: ExtendedEventRegister(int(x)),
             label="Extended Event Register",
         )
         """Query the instrument extended event register."""
@@ -704,7 +689,7 @@ class YokogawaGS200(VisaInstrument):
         self.condition_register: Parameter = self.add_parameter(
             "condition_register",
             get_cmd=":STAT:COND?",
-            get_parser=ConditionRegister,
+            get_parser=lambda x: ConditionRegister(int(x)),
             label="Condition Register",
         )
         """Query the instrument condition register."""
@@ -927,9 +912,11 @@ class YokogawaGS200(VisaInstrument):
                 if not self.ramp_blocking():
                     return
 
-                while not self.extended_event_register().EOP:
+                while ExtendedEventRegister.EOP not in self.extended_event_register():
                     # EOP indicates the end of a program
-                    if self.status_byte().EAV and (errors := self.system_errors()):
+                    if StatusByte.EAV in self.status_byte() and (
+                        errors := self.system_errors()
+                    ):
                         raise RuntimeError(f"Ramp failed with errors: {errors}")
 
                     # Sleep between 2 and 100 ms before checking again.
