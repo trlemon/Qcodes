@@ -79,7 +79,7 @@ class FormattedSweep(ParameterWithSetpoints[npt.NDArray, "KeysightPNATrace"]):
     def __init__(
         self,
         name: str,
-        instrument: "KeysightPNABase",
+        instrument: "KeysightPNATrace",
         sweep_format: str,
         label: str,
         unit: str,
