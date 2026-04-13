@@ -2,7 +2,7 @@ import time
 import warnings
 from functools import partial
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Literal, Self
+from typing import TYPE_CHECKING, Literal, Self, cast
 
 from qcodes.instrument import (
     InstrumentBaseKWArgs,
@@ -55,7 +55,7 @@ class Register(int):
 
     _bits: MappingProxyType[tuple[int, str], str]
 
-    def _is_bit_set(self, bit) -> bool:
+    def _is_bit_set(self, bit: int) -> bool:
         return bool((1 << bit) & self)
 
     def __repr__(self) -> str:
@@ -65,7 +65,7 @@ class Register(int):
             + ")"
         )
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Automatically sets properties based on _bits."""
         super().__init_subclass__()
         for (i, name), doc in cls._bits.items():
@@ -433,15 +433,15 @@ class YokogawaGS200Program(InstrumentChannel["YokogawaGS200"]):
             docstring="run the program",
         )
 
-    def hold(self):
+    def hold(self) -> None:
         """Pauses and resumes the program currently being executed."""
         self.write(":PROG:HOLD")
 
-    def pause(self):
+    def pause(self) -> None:
         """Pauses the program currently being executed."""
         self.write(":PROG:PAUS")
 
-    def cont(self):
+    def cont(self) -> None:
         """Resumes the program currently being executed."""
         self.write(":PROG:CONT")
 
@@ -777,7 +777,7 @@ class YokogawaGS200(VisaInstrument):
         self.measure._output = bool(state)
         return state
 
-    def _parse_delay(self, delay: float | None, step: float | None) -> float:
+    def _parse_delay(self, delay: float | None, step: float) -> float:
         if delay is not None and delay != 0:
             warnings.warn(
                 "The delay parameter is deprecated and will be removed in a future release. "
@@ -798,9 +798,9 @@ class YokogawaGS200(VisaInstrument):
                 QCoDeSDeprecationWarning,
                 stacklevel=3,
             )
+            return float(step)
         else:
-            step = self.ramp_step()
-        return step
+            return self.ramp_step()
 
     def ramp_voltage(
         self,
@@ -885,7 +885,10 @@ class YokogawaGS200(VisaInstrument):
                         f"Desired output level not in range  [-{rng:.3}, {rng:.3}]"
                     )
 
-                if (delta := ramp_to - self.output_level.source.get_raw()) == 0:
+                if (
+                    delta := ramp_to
+                    - cast("Parameter", self.output_level.source).get_raw()
+                ) == 0:
                     # Nothing to do. We got the raw value because ramp_to already went through
                     # set-parsing including scaling and offsetting.
                     return
