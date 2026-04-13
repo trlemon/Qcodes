@@ -1858,10 +1858,8 @@ class TektronixAWG5014(VisaInstrument):
 
         """
         ch = self.channels[DC_channel_number - 1]
-        restore = ch.DC_out.get()
-        ch.DC_out.set(set_level)
-        sleep(length)
-        ch.DC_out.set(restore)
+        with ch.DC_out.set_to(set_level):
+            sleep(length)
 
     def is_awg_ready(self) -> bool:
         """
