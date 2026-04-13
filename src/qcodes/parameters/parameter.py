@@ -8,6 +8,8 @@ import os
 from types import MethodType
 from typing import TYPE_CHECKING, Any, Generic, Literal
 
+from typing_extensions import TypedDict
+
 from .command import Command
 from .parameter_base import (
     InstrumentTypeVar_co,
@@ -33,7 +35,7 @@ log = logging.getLogger(__name__)
 
 
 class ParameterKWArgs(
-    ParameterBaseKWArgs[ParameterDataTypeVar, InstrumentTypeVar_co],
+    TypedDict,
     Generic[ParameterDataTypeVar, InstrumentTypeVar_co],
 ):
     """
@@ -46,7 +48,7 @@ class ParameterKWArgs(
     defined here.
     """
 
-    # Members inherited from ParameterBaseKWArgs are redeclared here
+    # Members from ParameterBaseKWArgs are redeclared here
     # so that Sphinx can discover and document them.
     instrument: NotRequired[InstrumentTypeVar_co]
     """
